@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>MyPetDiary</title>
+	<style>
+		/* --- デザイン設定 --- */
+
+		body {
+			font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+			background-color: rgb(216, 167, 167); /* 優しいピンクベージュ */
+			color: #5d4037;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 800px; /* 表を表示するために少し幅を広げました */
+			margin: auto;
+			background: white;
+			padding: 20px;
+			border-radius: 15px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		.form-group {
+			margin-bottom: 15px;
+		}
+
+		button {
+			width: 100%;
+			padding: 10px;
+			background-color: #ffb74d; /* やさしいオレンジ色 */
+			border: none;
+			border-radius: 5px;
+			color: white;
+			font-weight: bold;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: #ffa726;
+		}
+
+		/* --- 追加：一覧表示用のテーブルデザイン --- */
+		hr {
+			border: 0;
+			border-top: 1px dashed #d8a7a7;
+			margin: 30px 0;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+		}
+
+		th, td {
+			padding: 12px;
+			text-align: left;
+			border-bottom: 1px solid #eee;
+		}
+
+		th {
+			background-color: #fff3e0; /* 薄いオレンジ */
+			color: #e65100;
+		}
+
+		tr:hover {
+			background-color: #fff9f0;
+		}
+
+		/* 異常検知用：10kg超えの時に文字を太くするなどの準備 */
+		.alert-text {
+			color: #d32f2f;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container">
+		<h1>🐾 MyPetDiary</h1>
+
+		<form th:action="@{/save}" method="post">
+			<div class="form-group">
+				<label>📅 記録日時 (遡って記録する場合)</label>
+				<input type="datetime-local" name="customTimestamp">
+				<small>※空欄にすると「今」の時刻で保存されます</small>
+			</div>
+			
+			<div class="form-group">
+				<label>🌡️ 今日の気温 (℃)</label>
+				<input type="number" name="temperature" step="0.1" placeholder="例: 22.5" required>
+			</div>
+
+			<div class="form-group">
+				<label>💧 今日の湿度 (%)</label>
+				<input type="number" name="humidity" placeholder="例: 50" required>
+			</div>
+
+			<div class="form-group">
+				<label>⚖️ ペットの体重 (kg)</label>
+				<input type="number" name="weight" step="0.01" placeholder="例: 4.55" required>
+			</div>
+
+			<div class="form-group">
+				<label>📋 メモ</label>
+				<input type="text" name="memo" placeholder="今日の様子はどうかな？">
+			</div>
+
+			<button type="submit">記録する</button>
+		</form>
+
+		<hr>
+
+		<h2>📋 過去の記録</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>日時</th>
+					<th>気温</th>
+					<th>湿度</th>
+					<th>体重</th>
+					<th>メモ</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="record : ${records}">
+					<td th:text="${#temporals.format(record.createdAt, 'yyyy/MM/dd HH:mm')}"></td>
+					<td th:text="${record.temperature} + ' ℃'"></td>
+					<td th:text="${record.humidity} + ' %'"></td>
+					<td th:text="${record.weight} + ' kg'" 
+					    th:classappend="${record.weight > 10.0} ? 'alert-text' : ''"></td>
+					<td th:text="${record.memo}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+</body>
+
+</html>
