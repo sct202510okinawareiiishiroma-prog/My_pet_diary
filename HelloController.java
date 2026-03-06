@@ -18,7 +18,7 @@ public class HelloController {
 	private PetRecordRepository repository;
 	
 	@GetMapping("/")
-	public String index(Model model) { // 引数をスッキリさせました
+	public String index(Model model) {
 		List<PetRecord> records = repository.findAll();
 		model.addAttribute("records", records);
 		return "index";
