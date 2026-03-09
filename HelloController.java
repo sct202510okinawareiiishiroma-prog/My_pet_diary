@@ -2,6 +2,8 @@ package com.example.demo;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.client.RestTemplate; // 追加：API通信用
 
 @Controller
 public class HelloController {
@@ -17,59 +20,91 @@ public class HelloController {
 	@Autowired
 	private PetRecordRepository repository;
 	
+	/**
+	 * Open-Meteo APIから沖縄県那覇市の現在の天気情報を取得するメソッド
+	 */
+	private Map<String, Object> getCurrentWeather() {
+		// 那覇市の緯度(26.2124)・経度(127.6809)を指定
+		String url = "https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia/Tokyo";
+		
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			// APIを実行して結果をMap形式で受け取る
+			Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+			// "current"（現在の気象データ）の部分だけを抜き出して返す
+			return (Map<String, Object>) response.get("current");
+		} catch (Exception e) {
+			System.out.println("天気情報の取得に失敗しました: " + e.getMessage());
+			return null;
+		}
+	}
+
 	@GetMapping("/")
 	public String index(Model model) {
 		List<PetRecord> records = repository.findAll();
 		model.addAttribute("records", records);
+		
+		// 【追加】那覇市の現在の天気を取得して画面に渡す
+		Map<String, Object> weather = getCurrentWeather();
+		model.addAttribute("currentWeather", weather);
+		
+		// フォーム用の空オブジェクト
+		model.addAttribute("editingRecord", new PetRecord());
+		
+		//天気情報を取得して画面に渡す
+		model.addAttribute("currentWeather",getCurrentWeather());
+		
 		return "index";
 	}
 
 	@PostMapping("/save")
 	public String save(
+			@RequestParam(value = "id", required = false) Long id,
 			@RequestParam("temperature") double temp,
 			@RequestParam("weight") double weight,
 			@RequestParam("humidity") int humidity,
 			@RequestParam("memo") String memo,
 			@RequestParam(value = "customTimestamp", required = false) String customTimestamp) {
 		
-		System.out.println("---MyPetDiary受信データ ---");
-		System.out.println("気温:" + temp + "℃");
-		System.out.println("湿度:" + humidity + "%");
-		System.out.println("体重:" + weight + "kg");
-		System.out.println("メモ:" + memo);
-		
-		if (weight > 10.0) {
-			System.out.println("【異常検知】体重が10kgを超えています！チェックしてください。");
+		PetRecord record;
+		if (id != null) {
+			record = repository.findById(id).orElse(new PetRecord());
+		} else {
+			record = new PetRecord();
 		}
-		
-		PetRecord record = new PetRecord();
+
 		record.setTemperature(temp);
 		record.setHumidity(humidity);
 		record.setWeight(weight);
 		record.setMemo(memo);
         
-		// 日時が入力されていればセットするロジック
 		if (customTimestamp != null && !customTimestamp.isEmpty()) {
 			record.setCreatedAt(LocalDateTime.parse(customTimestamp));
 		}
 		
 		repository.save(record);
-
 		return "redirect:/";
 	}
-	
-	/**
-	 * 【新機能】記録の削除
-	 * @param id URLに含まれるデータのID（/delete/5 なら 5）
-	 */
+
+	@GetMapping("/edit/{id}")
+	public String edit(@PathVariable("id") Long id, Model model) {
+		Optional<PetRecord> record = repository.findById(id);
+		if (record.isPresent()) {
+			model.addAttribute("editingRecord", record.get());
+			model.addAttribute("records", repository.findAll());
+			
+			// 編集画面でも最新の天気を表示させる
+			model.addAttribute("currentWeather", getCurrentWeather());
+			
+			return "index";
+		}
+		return "redirect:/";
+	}
+
 	@GetMapping("/delete/{id}")
 	public String delete(@PathVariable("id") Long id) {
-		// 指定されたIDのデータをデータベースから削除
 		repository.deleteById(id);
-		
 		System.out.println("ID:" + id + " のデータを削除しました。");
-		
-		// 削除後は一覧画面に戻る
 		return "redirect:/";
 	}
 }

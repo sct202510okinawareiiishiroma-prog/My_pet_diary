@@ -6,7 +6,6 @@
 	<title>MyPetDiary</title>
 	<style>
 		/* --- デザイン設定 --- */
-
 		body {
 			font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
 			background-color: rgb(216, 167, 167); /* 優しいピンクベージュ */
@@ -15,7 +14,7 @@
 		}
 
 		.container {
-			max-width: 800px; /* 表を表示するために少し幅を広げました */
+			max-width: 800px;
 			margin: auto;
 			background: white;
 			padding: 20px;
@@ -25,6 +24,20 @@
 
 		.form-group {
 			margin-bottom: 15px;
+		}
+
+		label {
+			display: block;
+			margin-bottom: 5px;
+			font-weight: bold;
+		}
+
+		input {
+			width: 100%;
+			padding: 8px;
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			border-radius: 4px;
 		}
 
 		button {
@@ -42,7 +55,29 @@
 			background-color: #ffa726;
 		}
 
-		/* --- 追加：一覧表示用のテーブルデザイン --- */
+		/* お天気情報エリアのスタイル */
+		.weather-box {
+			background: #f0f7ff;
+			padding: 15px;
+			border-radius: 10px;
+			margin-bottom: 20px;
+			border: 1px solid #d0e2ff;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.weather-info {
+			font-size: 0.95em;
+		}
+
+		.apply-btn {
+			width: auto;
+			padding: 5px 15px;
+			font-size: 0.85em;
+			background-color: #64b5f6;
+		}
+
 		hr {
 			border: 0;
 			border-top: 1px dashed #d8a7a7;
@@ -62,17 +97,25 @@
 		}
 
 		th {
-			background-color: #fff3e0; /* 薄いオレンジ */
+			background-color: #fff3e0;
 			color: #e65100;
 		}
 
-		tr:hover {
-			background-color: #fff9f0;
-		}
-
-		/* 異常検知用：10kg超えの時に文字を太くするなどの準備 */
 		.alert-text {
 			color: #d32f2f;
+			font-weight: bold;
+		}
+		
+		.edit-btn {
+			color: #ffa726;
+			text-decoration: none;
+			font-weight: bold;
+			margin-right: 10px;
+		}
+
+		.delete-btn {
+			color: #d32f2f;
+			text-decoration: none;
 			font-weight: bold;
 		}
 	</style>
@@ -84,33 +127,49 @@
 		<h1>🐾 MyPetDiary</h1>
 
 		<form th:action="@{/save}" method="post">
-			<div class="form-group">
-				<label>📅 記録日時 (遡って記録する場合)</label>
-				<input type="datetime-local" name="customTimestamp">
-				<small>※空欄にすると「今」の時刻で保存されます</small>
-			</div>
-			
-			<div class="form-group">
-				<label>🌡️ 今日の気温 (℃)</label>
-				<input type="number" name="temperature" step="0.1" placeholder="例: 22.5" required>
+			<input type="hidden" name="id" th:value="${editingRecord.id}">
+
+			<div class="weather-box" th:if="${currentWeather != null}">
+				<div class="weather-info">
+					📍 <strong>現在の那覇市:</strong> 
+					気温 <span id="api-temp" th:text="${currentWeather.temperature_2m}">--</span>℃ / 
+					湿度 <span id="api-humidity" th:text="${currentWeather.relative_humidity_2m}">--</span>%
+				</div>
+				<button type="button" class="apply-btn" onclick="applyWeather()">📋 コピー</button>
+				</button>
 			</div>
 
 			<div class="form-group">
-				<label>💧 今日の湿度 (%)</label>
-				<input type="number" name="humidity" placeholder="例: 50" required>
+				<label>📅 記録日時</label>
+				<input type="datetime-local" name="customTimestamp" th:value="${editingRecord.createdAt}">
+				<small style="color: #888;">※空欄にすると「今」の時刻で保存されます</small>
+			</div>
+			
+			<div class="form-group">
+				<label>🌡️ 気温 (℃)</label>
+				<input type="number" id="input-temp" name="temperature" step="0.1" required th:value="${editingRecord.temperature}">
+			</div>
+
+			<div class="form-group">
+				<label>💧 湿度 (%)</label>
+				<input type="number" id="input-humidity" name="humidity" required th:value="${editingRecord.humidity}">
 			</div>
 
 			<div class="form-group">
 				<label>⚖️ ペットの体重 (kg)</label>
-				<input type="number" name="weight" step="0.01" placeholder="例: 4.55" required>
+				<input type="number" name="weight" step="0.01" required th:value="${editingRecord.weight}">
 			</div>
 
 			<div class="form-group">
 				<label>📋 メモ</label>
-				<input type="text" name="memo" placeholder="今日の様子はどうかな？">
+				<input type="text" name="memo" th:value="${editingRecord.memo}">
 			</div>
 
-			<button type="submit">記録する</button>
+			<button type="submit" th:text="${editingRecord.id != null} ? '更新する' : '記録する'"></button>
+			
+			<div th:if="${editingRecord.id != null}" style="text-align: center; margin-top: 10px;">
+				<a th:href="@{/}" style="color: #888; text-decoration: none;">キャンセル</a>
+			</div>
 		</form>
 
 		<hr>
@@ -136,17 +195,24 @@
 					    th:classappend="${record.weight > 10.0} ? 'alert-text' : ''"></td>
 					<td th:text="${record.memo}"></td>
 					<td>
-						<a th:href = "@{/delete/{id}(id=${record.id})}"
-						style="color:#d32f2f; text-decoration: none; font-weight: bold;" /*強調色*/
-						onclick="return confirm('この記録を削除してもよろしいですか？');">
-						🗑️ 削除
+						<a class="edit-btn" th:href="@{/edit/{id}(id=${record.id})}">✏️ 編集</a>
+						<a class="delete-btn" th:href="@{/delete/{id}(id=${record.id})}"
+						   onclick="return confirm('この記録を削除してもよろしいですか？');">
+						   🗑️ 削除
 						</a>
 					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
+	
+	
+	<script>
+		function applyWeather() {
+			document.getElementById('input-temp').value = document.getElementById('api-temp').innerText;
+			document.getElementById('input-humidity').value = document.getElementById('api-humidity').innerText;
+		}
+	</script>
 
 </body>
-
 </html>
