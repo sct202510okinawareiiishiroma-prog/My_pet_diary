@@ -10,57 +10,53 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-// [@Entity]このクラスがデータベースの「表（テーブル）」と結びつくデータ
 @Entity
-//[@Table]MySQLで作ったテーブル名「pet_records」とこのクラスを紐づけます
-@Table(name = "pet_records") 
+@Table(name = "pet_records")
 public class PetRecord {
-	
-	// 【@Id】この項目がデータの「主キー（背番号）」であることを示します
-	@Id
-	// 【@GeneratedValue】IDを1, 2, 3...と自動で増やすように設定します
-	@GeneratedValue(strategy = GenerationType.IDENTITY) // IDを自動で増やす設定
-	private Long id;
-	
-	//--ここからペットの記録データ--
-	
-	//気温を保存する変数
-	private Double temperature;
-	//湿度を保存する変数
-	private Integer humidity;
-	//体重を保存する変数
-	private Double weight;
-	//メモを保存する変数
-	private String memo;
-	
-	//時刻の手動入力と自動記録に関する機能
-	@Column(name = "created_at")
-	private LocalDateTime createdAt;
-	
-	//データベースに現在時刻の自動セット
-	@PrePersist
-	protected void onCreate() {
-		if (this.createdAt == null) {
-			    this.createdAt = LocalDateTime.now();
-		}
-	}
-	
-	//--「Getter」と「Setter」のメソッド--
-	public Long getId() { return id; }
-	public void setId(Long id) { this.id = id;}
-	
-	public Double getTemperature() { return temperature; }
-	public void setTemperature(Double temp) { this.temperature = temp; }
-	
-	public Integer getHumidity() { return humidity; }
-	public void setHumidity(Integer humi) { this.humidity = humi; }
-	
-	public Double getWeight() { return weight; }
-	public void setWeight(Double weight) { this.weight = weight; }
-	
-	public String getMemo() { return memo; }
-	public void setMemo(String memo) { this.memo = memo; }
-	
-	public LocalDateTime getCreatedAt() { return createdAt; }
-	public void setCreatedAt(LocalDateTime dateTime) {this.createdAt = dateTime; }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String username; // 誰の投稿か（セキュリティ用）
+
+    private Double temperature;
+    private Integer humidity;
+    private Double weight;
+    
+    @Column(columnDefinition = "TEXT")
+    private String memo;
+
+    @Column(name = "created_at", updatable = false) // 更新時に上書きされないよう設定
+    private LocalDateTime createdAt;
+
+    // 保存時に自動で日時をセット
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
+
+    // --- Getter & Setter ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public Double getTemperature() { return temperature; }
+    public void setTemperature(Double temperature) { this.temperature = temperature; }
+
+    public Integer getHumidity() { return humidity; }
+    public void setHumidity(Integer humidity) { this.humidity = humidity; }
+
+    public Double getWeight() { return weight; }
+    public void setWeight(Double weight) { this.weight = weight; }
+
+    public String getMemo() { return memo; }
+    public void setMemo(String memo) { this.memo = memo; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

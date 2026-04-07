@@ -3,216 +3,144 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>MyPetDiary</title>
-	<style>
-		/* --- デザイン設定 --- */
-		body {
-			font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
-			background-color: rgb(216, 167, 167); /* 優しいピンクベージュ */
-			color: #5d4037;
-			padding: 20px;
-		}
-
-		.container {
-			max-width: 800px;
-			margin: auto;
-			background: white;
-			padding: 20px;
-			border-radius: 15px;
-			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		}
-
-		.form-group {
-			margin-bottom: 15px;
-		}
-
-		label {
-			display: block;
-			margin-bottom: 5px;
-			font-weight: bold;
-		}
-
-		input {
-			width: 100%;
-			padding: 8px;
-			box-sizing: border-box;
-			border: 1px solid #ccc;
-			border-radius: 4px;
-		}
-
-		button {
-			width: 100%;
-			padding: 10px;
-			background-color: #ffb74d; /* やさしいオレンジ色 */
-			border: none;
-			border-radius: 5px;
-			color: white;
-			font-weight: bold;
-			cursor: pointer;
-		}
-
-		button:hover {
-			background-color: #ffa726;
-		}
-
-		/* お天気情報エリアのスタイル */
-		.weather-box {
-			background: #f0f7ff;
-			padding: 15px;
-			border-radius: 10px;
-			margin-bottom: 20px;
-			border: 1px solid #d0e2ff;
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-		}
-
-		.weather-info {
-			font-size: 0.95em;
-		}
-
-		.apply-btn {
-			width: auto;
-			padding: 5px 15px;
-			font-size: 0.85em;
-			background-color: #64b5f6;
-		}
-
-		hr {
-			border: 0;
-			border-top: 1px dashed #d8a7a7;
-			margin: 30px 0;
-		}
-
-		table {
-			width: 100%;
-			border-collapse: collapse;
-			margin-top: 10px;
-		}
-
-		th, td {
-			padding: 12px;
-			text-align: left;
-			border-bottom: 1px solid #eee;
-		}
-
-		th {
-			background-color: #fff3e0;
-			color: #e65100;
-		}
-
-		.alert-text {
-			color: #d32f2f;
-			font-weight: bold;
-		}
-		
-		.edit-btn {
-			color: #ffa726;
-			text-decoration: none;
-			font-weight: bold;
-			margin-right: 10px;
-		}
-
-		.delete-btn {
-			color: #d32f2f;
-			text-decoration: none;
-			font-weight: bold;
-		}
-	</style>
+	<title>MyPetDiary - メイン画面</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
-
 	<div class="container">
-		<h1>🐾 MyPetDiary</h1>
+		<header style="display: flex; justify-content: space-between; align-items: center;">
+			<h1>MyPetDiary</h1>
+			<form th:action="@{/logout}" method="post">
+				<button type="submit" class="btn-logout">ログアウト</button>
+			</form>
+		</header>
 
-		<form th:action="@{/save}" method="post">
-			<input type="hidden" name="id" th:value="${editingRecord.id}">
+		<p>こんにちは、<strong th:text="${#authentication.name}">ユーザー</strong>さん</p>
+		
+		<div style="text-align: center; margin-bottom: 20px; padding: 15px; background: #fdfdfd; border-radius: 8px; border: 1px solid #ddd;">
+            
+            <div th:if="${user != null and user.favoritePhoto != null}">
+                <img th:src="'data:image/jpeg;base64,' + ${user.favoritePhoto}" alt="お気に入り写真" 
+                     style="max-width: 100%; height: auto; max-height: 250px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            </div>
+            
+            <div th:if="${user == null or user.favoritePhoto == null}" 
+                 style="width: 100%; max-width: 250px; height: 150px; background-color: #e0e0e0; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #666;">
+                <p>写真が未登録です</p>
+            </div>
 
-			<div class="weather-box" th:if="${currentWeather != null}">
-				<div class="weather-info">
-					📍 <strong>現在の那覇市:</strong> 
-					気温 <span id="api-temp" th:text="${currentWeather.temperature_2m}">--</span>℃ / 
-					湿度 <span id="api-humidity" th:text="${currentWeather.relative_humidity_2m}">--</span>%
-				</div>
-				<button type="button" class="apply-btn" onclick="applyWeather()">📋 コピー</button>
-				</button>
-			</div>
+            <form th:action="@{/uploadPhoto}" method="post" enctype="multipart/form-data" style="margin-top: 15px;">
+                <input type="file" name="photo" accept="image/*" required style="font-size: 0.9em; margin-bottom: 10px;">
+                <br>
+                <button type="submit" class="btn" style="padding: 5px 15px; font-size: 0.9em; width: auto;">写真をアップロード</button>
+            </form>
+        </div>
+        <div class="weather-area" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
 
-			<div class="form-group">
-				<label>📅 記録日時</label>
-				<input type="datetime-local" name="customTimestamp" th:value="${editingRecord.createdAt}">
-				<small style="color: #888;">※空欄にすると「今」の時刻で保存されます</small>
-			</div>
-			
-			<div class="form-group">
-				<label>🌡️ 気温 (℃)</label>
-				<input type="number" id="input-temp" name="temperature" step="0.1" required th:value="${editingRecord.temperature}">
-			</div>
-
-			<div class="form-group">
-				<label>💧 湿度 (%)</label>
-				<input type="number" id="input-humidity" name="humidity" required th:value="${editingRecord.humidity}">
-			</div>
-
-			<div class="form-group">
-				<label>⚖️ ペットの体重 (kg)</label>
-				<input type="number" name="weight" step="0.01" required th:value="${editingRecord.weight}">
-			</div>
-
-			<div class="form-group">
-				<label>📋 メモ</label>
-				<input type="text" name="memo" th:value="${editingRecord.memo}">
-			</div>
-
-			<button type="submit" th:text="${editingRecord.id != null} ? '更新する' : '記録する'"></button>
-			
-			<div th:if="${editingRecord.id != null}" style="text-align: center; margin-top: 10px;">
-				<a th:href="@{/}" style="color: #888; text-decoration: none;">キャンセル</a>
-			</div>
-		</form>
+		<div class="weather-area" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+			<label for="region-select"><strong>地域を選択:</strong></label>
+			<select id="region-select" class="login-input"
+				style="width: auto; display: inline-block; margin-right: 10px;">
+				<option value="26.21,127.68">沖縄県（那覇）</option>
+				<option value="35.68,139.76">東京都（千代田区）</option>
+				<option value="34.69,135.50">大阪府（大阪）</option>
+				<option value="43.06,141.35">北海道（札幌）</option>
+				<option value="33.59,130.40">福岡県（福岡）</option>
+			</select>
+			<button type="button" class="btn" style="width: auto;" onclick="applyRegionalWeather()">天気を入力欄にコピー</button>
+		</div>
 
 		<hr>
 
-		<h2>📋 過去の記録</h2>
-		<table>
-			<thead>
-				<tr>
-					<th>日時</th>
-					<th>気温</th>
-					<th>湿度</th>
-					<th>体重</th>
-					<th>メモ</th>
-					<th>操作</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="record : ${records}">
-					<td th:text="${#temporals.format(record.createdAt, 'yyyy/MM/dd HH:mm')}"></td>
-					<td th:text="${record.temperature} + ' ℃'"></td>
-					<td th:text="${record.humidity} + ' %'"></td>
-					<td th:text="${record.weight} + ' kg'" 
-					    th:classappend="${record.weight > 10.0} ? 'alert-text' : ''"></td>
-					<td th:text="${record.memo}"></td>
-					<td>
-						<a class="edit-btn" th:href="@{/edit/{id}(id=${record.id})}">✏️ 編集</a>
-						<a class="delete-btn" th:href="@{/delete/{id}(id=${record.id})}"
-						   onclick="return confirm('この記録を削除してもよろしいですか？');">
-						   🗑️ 削除
-						</a>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+		<section class="post-section">
+			<h2 th:text="${editingRecord.id != null} ? '記録を編集する' : '今日の記録をつける'">今日の記録をつける</h2>
+			
+			<form th:action="@{/save}" method="post" th:object="${editingRecord}">
+				<input type="hidden" th:field="*{id}">
+
+				<div class="form-group">
+					<label>体重 (kg):</label>
+					<input type="number" step="0.1" th:field="*{weight}" required>
+				</div>
+
+				<div class="form-group">
+					<label>気温 (°C):</label>
+					<input type="number" step="0.1" id="temp-input" th:field="*{temperature}">
+				</div>
+
+				<div class="form-group">
+					<label>湿度 (%):</label>
+					<input type="number" id="humi-input" th:field="*{humidity}">
+				</div>
+
+				<div class="form-group">
+					<label>メモ:</label>
+					<textarea th:field="*{memo}" rows="3" placeholder="体調や様子など"></textarea>
+				</div>
+
+				<button type="submit" class="btn" th:text="${editingRecord.id != null} ? '更新する' : '保存する'">保存する</button>
+				<a th:if="${editingRecord.id != null}" th:href="@{/}" style="margin-left: 10px;">キャンセル</a>
+			</form>
+		</section>
+
+		<hr>
+
+		<section class="list-section">
+			<h2>これまでの記録</h2>
+			<table class="diary-table">
+				<thead>
+					<tr>
+						<th>日時</th>
+						<th>体重</th>
+						<th>気温</th>
+						<th>湿度</th>
+						<th>メモ</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="r : ${records}">
+						<td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd HH:mm')}"></td>
+						<td th:text="${r.weight} + 'kg'"></td>
+						<td th:text="${r.temperature} + '°C'"></td>
+						<td th:text="${r.humidity} + '%'"></td>
+						<td th:text="${r.memo}"></td>
+						<td>
+							<a th:href="@{/edit/{id}(id=${r.id})}">編集</a> | 
+							<a th:href="@{/delete/{id}(id=${r.id})}" 
+							   onclick="return confirm('本当に削除してもよろしいですか？')" style="color: red;">削除</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
 	</div>
-	
-	
+
 	<script>
-		function applyWeather() {
-			document.getElementById('input-temp').value = document.getElementById('api-temp').innerText;
-			document.getElementById('input-humidity').value = document.getElementById('api-humidity').innerText;
+		async function applyRegionalWeather() {
+			const coords = document.getElementById('region-select').value.split(',');
+			const lat = coords[0];
+			const lon = coords[1];
+
+			const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m&timezone=Asia/Tokyo`;
+
+			try {
+				const response = await fetch(url);
+				const data = await response.json();
+				const current = data.current;
+
+				document.getElementById('temp-input').value = current.temperature_2m;
+				document.getElementById('humi-input').value = current.relative_humidity_2m;
+
+				const regionName = document.getElementById('region-select').options[document.getElementById('region-select').selectedIndex].text;
+				console.log(`${regionName}の天気を反映しました`);
+
+			} catch (error) {
+				console.error("天気取得エラー:", error);
+				alert("天気情報の取得に失敗しました。");
+			}
 		}
 	</script>
-
 </body>
 </html>

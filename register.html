@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>新規会員登録 - MyPetDiary</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+	<style>
+		.register-form-group {
+			max-width: 400px;
+			margin: 0 auto 15px auto;
+			text-align: left;
+		}
+		
+		.register-input {
+			width: 100%;
+			padding: 8px;
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+		
+		.password-wrapper {
+			position: relative;
+			display: flex;
+			align-items: center;
+			width: 100%;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container" style="text-align: center;">
+		<h1>MyPetDiary 新規登録</h1>
+		<p>ユーザーIDとパスワードを設定してください。</p>
+
+		<form th:action="@{/register}" method="post">
+			
+			<div class="register-form-group">
+				<label for="username">ユーザーID:</label>
+				<input type="text" id="username" name="username" required 
+					placeholder="例: petlover123" class="register-input">
+			</div>
+
+			<div class="register-form-group">
+				<label for="password">パスワード</label>
+				<div class="password-wrapper">
+					<input type="password" id="password" name="password" required 
+						class="register-input" style="padding-right: 45px;">
+					
+					<span id="togglePassword"
+						style="position: absolute; right: 10px; cursor: pointer; user-select: none; font-size: 1.2em; z-index: 10;">
+						🙈
+					</span>
+				</div>
+			</div>
+
+			<button type="submit" class="btn" style="max-width: 400px; width: 100%;">アカウントを作成する</button>
+		</form>
+
+		<hr>
+		<p><a th:href="@{/login}">既にアカウントをお持ちの方はこちら</a></p>
+	</div>
+
+	<script>
+		const togglePassword = document.querySelector('#togglePassword');
+		const passwordInput = document.querySelector('#password');
+
+		togglePassword.addEventListener('click', function () {
+			const isPassword = passwordInput.getAttribute('type') === 'password';
+			const type = isPassword ? 'text' : 'password';
+			passwordInput.setAttribute('type', type);
+
+			// 表示中(text)なら「🐵」、非表示(password)なら「🙈」に切り替え
+			this.textContent = isPassword ? '🐵' : '🙈';
+		});
+	</script>
+</body>
+
+</html>
