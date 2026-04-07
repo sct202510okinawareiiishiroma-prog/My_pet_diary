@@ -18,6 +18,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 新規登録画面、CSS、JSなどはログインなしでアクセス可能にする
                 .requestMatchers("/register", "/css/**", "/js/**").permitAll()
+             // 画像フォルダへのアクセスを無許可で通す
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/register").permitAll()
                 // それ以外のページはすべてログインが必要
                 .anyRequest().authenticated()
             )

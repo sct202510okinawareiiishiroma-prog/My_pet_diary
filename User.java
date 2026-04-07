@@ -19,8 +19,8 @@ public class User {
     @Column(nullable = false)
     private boolean enabled; // アカウントが有効かどうか
     
-    @Column(columnDefinition = "MEDIUMTEXT") // 画像データを長い文字列として保存するための設定
-    private String favoritePhoto; 
+    @Column(length = 255) 
+    private String favoritePhoto;
 
     // --- 追加したフィールドのゲッターとセッター ---
     public String getFavoritePhoto() {

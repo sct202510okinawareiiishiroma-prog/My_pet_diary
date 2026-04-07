@@ -1,9 +1,12 @@
 package com.example.demo;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.Principal;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import net.coobird.thumbnailator.Thumbnails;
 
 @Controller
 public class HelloController {
@@ -86,27 +91,46 @@ public class HelloController {
 		return "redirect:/";
 	}
 
-	//--写真アップロード処理--
 	@PostMapping("/uploadPhoto")
 	public String uploadPhoto(@RequestParam("photo") MultipartFile file, Principal principal) {
-		if (!file.isEmpty()) {
-			try {
-				// 画像ファイルを「Base64」という文字列データに変換
-				String base64Image = Base64.getEncoder().encodeToString(file.getBytes());
+	    if (!file.isEmpty()) {
+	        try {
+	            // 1. 保存先フォルダのパスを指定 (プロジェクト直下の user-photos フォルダ)
+	            String uploadDir = "user-photos/";
+	            Path uploadPath = Paths.get(uploadDir);
 
-				// 現在のログインユーザーを取得して、画像データをセットして保存
-				String username = principal.getName();
-				Optional<User> userOpt = userRepository.findById(username);
+	            // フォルダが存在しない場合は作成する
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
 
-				if (userOpt.isPresent()) {
-					User user = userOpt.get();
-					user.setFavoritePhoto(base64Image);
-					userRepository.save(user);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return "redirect:/"; // トップページに戻る
+	            // 2. ファイル名の重複を防ぐため、UUID（ランダムなID）を使ってファイル名を生成
+	            // 元のファイル形式に関わらず、リサイズ後は .jpg として統一保存
+	            String fileName = UUID.randomUUID().toString() + ".jpg";
+
+	            // 3. Thumbnailator を使ってリサイズ処理
+	            // 幅800px、高さ800pxに収まるようにリサイズ（比率は維持されます）
+	            Thumbnails.of(file.getInputStream())
+	                .size(800, 800)
+	                .outputFormat("jpg")
+	                .toFile(uploadDir + fileName);
+
+	            // 4. DBには「ファイル名」だけを保存する
+	            String username = principal.getName();
+	            Optional<User> userOpt = userRepository.findById(username);
+	            
+	            if (userOpt.isPresent()) {
+	                User user = userOpt.get();
+	                user.setFavoritePhoto(fileName); // ここでファイル名をセット
+	                userRepository.save(user);
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            // 実際の運用ではここでエラーメッセージを画面に返す処理を入れますが、
+	            // まずは動作確認のためスタックトレースを表示させます
+	        }
+	    }
+	    return "redirect:/";
 	}
 }

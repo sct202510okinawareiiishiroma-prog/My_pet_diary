@@ -21,9 +21,9 @@
 		<div style="text-align: center; margin-bottom: 20px; padding: 15px; background: #fdfdfd; border-radius: 8px; border: 1px solid #ddd;">
             
             <div th:if="${user != null and user.favoritePhoto != null}">
-                <img th:src="'data:image/jpeg;base64,' + ${user.favoritePhoto}" alt="お気に入り写真" 
-                     style="max-width: 100%; height: auto; max-height: 250px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-            </div>
+    <img th:src="@{'/images/' + ${user.favoritePhoto}}" alt="お気に入り写真" 
+         style="max-width: 100%; height: auto; max-height: 250px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+</div>
             
             <div th:if="${user == null or user.favoritePhoto == null}" 
                  style="width: 100%; max-width: 250px; height: 150px; background-color: #e0e0e0; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #666;">
@@ -36,7 +36,6 @@
                 <button type="submit" class="btn" style="padding: 5px 15px; font-size: 0.9em; width: auto;">写真をアップロード</button>
             </form>
         </div>
-        <div class="weather-area" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
 
 		<div class="weather-area" style="margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
 			<label for="region-select"><strong>地域を選択:</strong></label>
@@ -143,4 +142,4 @@
 		}
 	</script>
 </body>
-</html>
+</html>tml>
