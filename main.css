@@ -1,0 +1,108 @@
+@charset "UTF-8";
+
+/* ヘッダーのレイアウト */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 写真表示エリアの枠 */
+.photo-display-area {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fdfdfd;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+/* ペットの写真 */
+.pet-photo {
+    max-width: 100%;
+    height: auto;
+    max-height: 250px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* 写真未登録時のプレースホルダー */
+.no-photo-placeholder {
+    width: 100%;
+    max-width: 250px;
+    height: 150px;
+    background-color: #e0e0e0;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #666;
+}
+
+/* 天気エリアのレイアウト */
+.weather-area {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee; 
+}
+
+/* 天気入力ボタンの調整 */
+.btn-weather-apply {
+    width: auto;
+}
+
+/* 現在のお天気プレビュー */
+.weather-preview {
+    margin-left: 15px;
+    font-weight: bold;
+    color: #555;
+    background-color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px dashed #ccc;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* --- 日記投稿フォームのパーツ --- */
+
+/* 入力欄の共通スタイル（体重・気温・湿度・メモ） */
+.diary-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* 編集キャンセルリンク */
+.post-section .link-cancel {
+    margin-left: 10px;
+    text-decoration: none;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.post-section .link-cancel:hover {
+    text-decoration: underline;
+    color: #333;
+}
+
+.region-select-box {
+    width: auto;
+    display: inline-block;
+    margin-right: 10px;
+    padding: 4px; 
+}
+
+/* 削除リンクのスタイル */
+.link-delete {
+    color: red;
+    text-decoration: none;
+}
+
