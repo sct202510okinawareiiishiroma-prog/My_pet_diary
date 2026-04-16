@@ -7,7 +7,7 @@
     align-items: center;
 }
 
-/* 写真表示エリアの枠 */
+/* --- 写真表示エリア関連（ここに集約） --- */
 .photo-display-area {
     text-align: center;
     margin-bottom: 20px;
@@ -15,6 +15,66 @@
     background: #fdfdfd;
     border-radius: 8px;
     border: 1px solid #ddd;
+}
+
+.pet-photo {
+    max-width: 100%;
+    height: auto;
+    max-height: 250px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.no-photo-placeholder {
+    width: 100%;
+    max-width: 250px;
+    height: 150px;
+    background-color: #e0e0e0;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #666;
+}
+
+/* 肉球ボタン関連（黒肉球） */
+.photo-upload-controls {
+    margin-top: 15px;
+}
+
+.btn-paw {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f0f0f0;
+    color: #333333;
+    padding: 10px 25px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #cccccc;
+    transition: all 0.2s;
+    border: 2px solid #333333;
+    margin-top: 10px;
+}
+
+.paw-icon {
+    font-size: 1.4em;
+    margin-right: 8px;
+    color: #000000; /* 黒肉球 */
+}
+
+/* ホバー（マウスをのせた時） */
+.btn-paw:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #cccccc;
+}
+
+/* クリックした時 */
+.btn-paw:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #cccccc;
 }
 
 /* ペットの写真 */

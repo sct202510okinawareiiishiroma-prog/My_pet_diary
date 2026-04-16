@@ -24,11 +24,24 @@
 			<div th:if="${user != null and user.favoritePhoto != null}">
 				<img th:src="@{'/images/' + ${user.favoritePhoto}}" alt="お気に入り写真" class="pet-photo">
 			</div>
-
 			<div th:if="${user == null or user.favoritePhoto == null}" class="no-photo-placeholder">
 				<p>写真が未登録です</p>
 			</div>
+
+			<div class="photo-upload-controls">
+				<form th:action="@{/uploadPhoto}" method="post" enctype="multipart/form-data">
+					<label for="photo-input" class="btn-paw">
+						<span class="paw-icon">
+						🐾
+						</span> 写真を変更
+						<input type="file" id="photo-input" name="photo" accept="image/*" onchange="this.form.submit()"
+							style="display: none;">
+					</label>
+				</form>
+			</div>
 		</div>
+
+
 
 
 		<div class="weather-area">
@@ -96,8 +109,8 @@
 					<tr th:each="r : ${records}">
 						<td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd HH:mm')}"></td>
 						<td th:text="${r.weight} + 'kg'"></td>
-						<td th:text="${r.temperature} + '°C'"></td>
-						<td th:text="${r.humidity} + '%'"></td>
+						<td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
+						<td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
 						<td th:text="${r.memo}"></td>
 						<td>
 							<a th:href="@{/edit/{id}(id=${r.id})}">編集</a> |
