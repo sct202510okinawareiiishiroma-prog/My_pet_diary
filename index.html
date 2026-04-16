@@ -45,16 +45,16 @@
 
 
 		<div class="weather-area">
-			<label for="region-select"><strong>地域を選択:</strong></label>
-			<select id="region-select" class="region-select-box">
+			<select id="region-select" class="diary-input" onchange="updateWeatherPreview()">
+    <option value="">地域を選択</option>
 				<option value="26.21,127.68">沖縄県（那覇）</option>
 				<option value="35.68,139.76">東京都（千代田区）</option>
 				<option value="34.69,135.50">大阪府（大阪）</option>
 				<option value="43.06,141.35">北海道（札幌）</option>
 				<option value="33.59,130.40">福岡県（福岡）</option>
 			</select>
+			<div id="weather-preview" class="weather-preview">--</div>
 			<button type="button" class="btn btn-weather-apply" onclick="applyRegionalWeather()">天気を入力欄にコピー</button>
-			<span id="weather-preview" class="weather-preview"></span>
 		</div>
 
 		<hr>

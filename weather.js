@@ -1,23 +1,35 @@
 /**
- * 選択された地域の天気情報を取得し、入力フォームに反映する
+ * 取得した天気データを一時的に保持する変数
  */
-async function applyRegionalWeather() {
-	const regionSelect = document.getElementById('region-select');
-	const previewArea = document.getElementById('weather-preview');
-	if (!regionSelect) return;
+let currentWeatherData = null;
 
-	const coords = regionSelect.value.split(',');
-	const lat = coords[0];
-	const lon = coords[1];
+/**
+ * 地域選択時に呼ばれる関数
+ * APIからデータを取得し、プレビューエリアにのみ反映する
+ */
+async function updateWeatherPreview() {
+    const regionSelect = document.getElementById('region-select');
+    const previewArea = document.getElementById('weather-preview');
+    
+    if (!regionSelect || !regionSelect.value) {
+        previewArea.textContent = "--";
+        currentWeatherData = null;
+        return;
+    }
 
-	const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia/Tokyo`;
+    const coords = regionSelect.value.split(',');
+    const lat = coords[0];
+    const lon = coords[1];
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&timezone=Asia/Tokyo`;
 
-	try {
-		const response = await fetch(url);
-		if (!response.ok) throw new Error('Network response was not ok');
+    try {
+        previewArea.textContent = "取得中...";
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
 
-		const data = await response.json();
-		const current = data.current;
+        const data = await response.json();
+        const current = data.current;
 
 		// --- ★追加：気象コードをマークに変換 ---
 		let weatherMark = "";
@@ -39,20 +51,33 @@ async function applyRegionalWeather() {
 			weatherMark = "❓";
 		}
 		
-		// 取得した気温 湿度 天気を出力
-		if (previewArea) {
-			previewArea.textContent = `現在：${current.temperature_2m}°C / ${current.relative_humidity_2m}% ${weatherMark}`;
-		}
-		
-		// 気温と湿度を入力欄にセット
-		document.getElementById('temp-input').value = current.temperature_2m;
-		document.getElementById('humi-input').value = current.relative_humidity_2m;
+		const temp = current.temperature_2m;
+        const humi = current.relative_humidity_2m;
+        
+        // データを一時保存（コピーボタン用）
+        currentWeatherData = { temp, humi };
+        
+        // プレビュー表示の更新
+        previewArea.textContent = `${weatherMark} ${temp}℃ / ${humi}%`;
 
-		const regionName = regionSelect.options[regionSelect.selectedIndex].text;
-		console.log(`${regionName}の天気を反映しました`);
+    } catch (error) {
+        console.error('Error fetching weather:', error);
+        previewArea.textContent = "取得失敗";
+        currentWeatherData = null;
+    }
+}
 
-	} catch (error) {
-		console.error("天気取得エラー:", error);
-		alert("天気情報の取得に失敗しました。");
-	}
+/**
+ * 「天気を入力欄にコピー」ボタンが押された時に呼ばれる関数
+ */
+function applyWeatherToFields() {
+    const tempInput = document.getElementById('temp-input');
+    const humiInput = document.getElementById('humi-input');
+
+    if (currentWeatherData) {
+        tempInput.value = currentWeatherData.temp;
+        humiInput.value = currentWeatherData.humi;
+    } else {
+        alert("先に地域を選択して、天気を表示させてください。");
+    }
 }
