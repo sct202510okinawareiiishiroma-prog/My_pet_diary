@@ -31,43 +31,37 @@
 			<div class="photo-upload-controls">
 				<form th:action="@{/uploadPhoto}" method="post" enctype="multipart/form-data">
 					<label for="photo-input" class="btn-paw">
-						<span class="paw-icon">
-						🐾
-						</span> 写真を変更
-						<input type="file" id="photo-input" name="photo" accept="image/*" onchange="this.form.submit()"
-							style="display: none;">
+						<span class="paw-icon">🐾</span>
+						<span>お気に入り写真を変更</span>
 					</label>
+					<input type="file" id="photo-input" name="photo" accept="image/*" onchange="this.form.submit()"
+						style="display: none;">
 				</form>
 			</div>
 		</div>
 
-
-
-
-		<div class="weather-area">
+		<section class="weather-area">
+			<h3>地域のお天気情報を確認</h3>
 			<select id="region-select" class="diary-input" onchange="updateWeatherPreview()">
-    <option value="">地域を選択</option>
-				<option value="26.21,127.68">沖縄県（那覇）</option>
-				<option value="35.68,139.76">東京都（千代田区）</option>
-				<option value="34.69,135.50">大阪府（大阪）</option>
-				<option value="43.06,141.35">北海道（札幌）</option>
-				<option value="33.59,130.40">福岡県（福岡）</option>
+				<option value="">地域を選択してください</option>
+				<option value="35.6895,139.6917">東京</option>
+				<option value="34.6937,135.5023">大阪</option>
+				<option value="43.0642,141.3468">札幌</option>
+				<option value="33.5902,130.4017">福岡</option>
+				<option value="26.2124,127.6809">那覇</option>
 			</select>
 			<div id="weather-preview" class="weather-preview">--</div>
-			<button type="button" class="btn btn-weather-apply" onclick="applyRegionalWeather()">天気を入力欄にコピー</button>
-		</div>
+			<button type="button" class="btn btn-weather-apply" onclick="applyWeatherToFields()">天気を入力欄にコピー</button>
+		</section>
 
-		<hr>
-
-		<section class="post-section">
+		<section class="form-section">
 			<h2 th:text="${editingRecord.id != null} ? '記録を編集する' : '今日の記録をつける'">今日の記録をつける</h2>
-
-			<form th:action="@{/save}" method="post" th:object="${editingRecord}">
+			<form th:action="@{/save}" th:object="${editingRecord}" method="post">
 				<input type="hidden" th:field="*{id}">
 
 				<div class="form-group">
 					<label>体重 (kg):</label>
-					<input type="number" step="0.1" th:field="*{weight}" required class="diary-input">
+					<input type="number" step="0.01" th:field="*{weight}" class="diary-input">
 				</div>
 
 				<div class="form-group">
@@ -78,6 +72,11 @@
 				<div class="form-group">
 					<label>湿度 (%):</label>
 					<input type="number" id="humi-input" th:field="*{humidity}" class="diary-input">
+				</div>
+
+				<div class="form-group">
+					<label>ごはん (g):</label>
+					<input type="number" step="0.1" th:field="*{food}" class="diary-input">
 				</div>
 
 				<div class="form-group">
@@ -95,31 +94,40 @@
 		<section class="list-section">
 			<h2>これまでの記録</h2>
 			<table class="diary-table">
-				<thead>
-					<tr>
-						<th>日時</th>
-						<th>体重</th>
-						<th>気温</th>
-						<th>湿度</th>
-						<th>メモ</th>
-						<th>操作</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="r : ${records}">
-						<td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd HH:mm')}"></td>
-						<td th:text="${r.weight} + 'kg'"></td>
-						<td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
-						<td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
-						<td th:text="${r.memo}"></td>
-						<td>
-							<a th:href="@{/edit/{id}(id=${r.id})}">編集</a> |
-							<a th:href="@{/delete/{id}(id=${r.id})}" onclick="return confirm('本当に削除してもよろしいですか？')"
-								class="link-delete">削除</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+    <thead>
+        <tr>
+            <th>日時</th>
+            <th>体重</th>
+            <th>気温</th>
+            <th>湿度</th>
+            <th>ごはん</th>
+            <th>メモ</th> <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="r : ${records}">
+            <td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd')}"></td>
+            <td th:text="${r.weight != null ? r.weight + 'kg' : '-'}"></td>
+            <td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
+            <td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
+            <td th:text="${r.food != null ? r.food + 'g' : '0g'}"></td>
+            <td>
+                <details th:if="${r.memo != null and !r.memo.empty}">
+                    <summary style="cursor: pointer; list-style: none;">
+                        <span class="memo-toggle-icon">💬 メモを見る</span>
+                    </summary>
+                    <div class="memo-content" style="white-space: pre-wrap; margin-top: 5px; font-size: 0.9em; color: #555;" th:text="${r.memo}"></div>
+                </details>
+                <span th:if="${r.memo == null or r.memo.empty}">-</span>
+            </td>
+            <td>
+                <a th:href="@{/edit/{id}(id=${r.id})}" class="btn-edit">編集</a>
+                <a th:href="@{/delete/{id}(id=${r.id})}" class="btn-delete"
+                    onclick="return confirm('本当に削除しますか？')">削除</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
 		</section>
 	</div>
 </body>

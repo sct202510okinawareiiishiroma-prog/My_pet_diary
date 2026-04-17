@@ -33,7 +33,7 @@ public class HelloController {
 	public String index(Model model, Principal principal) {
 		String username = principal.getName();
 		//--個人データ取得--
-		List<PetRecord> records = repository.findByUsername(username);
+		List<PetRecord> records = repository.findDailyTotalsByUsername(username);
 		model.addAttribute("records", records);
 		//--ユーザー情報を取得して画面に渡す--
 		Optional<User> userOpt = userRepository.findById(username);

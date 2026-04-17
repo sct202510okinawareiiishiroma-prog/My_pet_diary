@@ -24,6 +24,11 @@ public class PetRecord {
     private Integer humidity;
     private Double weight;
     
+ // 【追加】ごはんの量 (g)
+    // 初期値0.0を安全に実現するための安全装置として nullable = false を指定します
+    @Column(nullable = false)
+    private Double food = 0.0;
+    
     @Column(columnDefinition = "TEXT")
     private String memo;
 

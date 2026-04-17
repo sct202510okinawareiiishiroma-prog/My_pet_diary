@@ -77,29 +77,6 @@
     box-shadow: 0 2px 0 #cccccc;
 }
 
-/* ペットの写真 */
-.pet-photo {
-    max-width: 100%;
-    height: auto;
-    max-height: 250px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-/* 写真未登録時のプレースホルダー */
-.no-photo-placeholder {
-    width: 100%;
-    max-width: 250px;
-    height: 150px;
-    background-color: #e0e0e0;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    color: #666;
-}
-
 /* 天気エリアのレイアウト */
 .weather-area {
     margin-bottom: 20px;
@@ -160,9 +137,67 @@
     padding: 4px; 
 }
 
-/* 削除リンクのスタイル */
-.link-delete {
-    color: red;
+/* --- 履歴テーブル関連の追加スタイル --- */
+
+.diary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.diary-table th, .diary-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.diary-table th {
+    background-color: #f2f2f2;
+}
+
+/* メモトグル(details)用スタイル */
+.memo-summary {
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #0066cc;
+    list-style: none; /* デフォルトの矢印を消す */
+    outline: none;
+    text-decoration: underline;
+}
+
+.memo-summary::-webkit-details-marker {
+    display: none; /* Safari用 */
+}
+
+.memo-content {
+    background: #f9f9f9;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    margin-top: 5px;
+    white-space: pre-wrap; /* 改行を有効にする */
+    text-align: left;
+    font-size: 0.9em;
+}
+
+/* 操作ボタンのレイアウト */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-edit {
+    color: #0066cc;
     text-decoration: none;
 }
 
+.btn-delete {
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit;
+    text-decoration: underline;
+}
