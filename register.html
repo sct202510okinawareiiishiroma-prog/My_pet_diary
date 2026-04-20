@@ -23,6 +23,8 @@
 				<input type="text" id="username" name="username" required placeholder="例: petlover123"
 					class="auth-input">
 			</div>
+			
+			<div th:if="${errorMessage}" style="color: red; margin-bottom: 15px;" th:text="${errorMessage}"></div>
 
 			<div class="auth-form-group">
 				<label for="password">パスワード</label>

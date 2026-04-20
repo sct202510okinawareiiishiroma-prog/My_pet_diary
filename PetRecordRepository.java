@@ -13,7 +13,8 @@ public interface PetRecordRepository extends JpaRepository<PetRecord, Long> {
     /**
      * 通常の全件取得（ユーザー別）
      */
-    List<PetRecord> findByUsername(String username);
+    //List<PetRecord> findByUsername(String username);
+    List<PetRecord> findDailyTotalsByUsername(String username);
 
     /**
      * 日別累計・最新値取得クエリ
@@ -31,20 +32,39 @@ public interface PetRecordRepository extends JpaRepository<PetRecord, Long> {
             r.weight, 
             sums.total_food as food, 
             sums.all_memos as memo, 
-            DATE(r.created_at) as created_at 
+            DATE(r.created_at) as created_at,
+            sums.aggregated_custom_values -- ★追加：集計されたカスタム値の文字列
         FROM pet_records r
         INNER JOIN (
-            -- 日ごとの「最新のID」「ごはん合計」「メモの連結」を算出するサブクエリ
             SELECT 
-                MAX(id) as last_id,
-                SUM(food) as total_food,
-                GROUP_CONCAT(memo SEPARATOR '\n') as all_memos,
-                DATE(created_at) as d_date
-            FROM pet_records
-            WHERE username = :username
-            GROUP BY DATE(created_at)
+                MAX(p.id) as last_id,
+                SUM(p.food) as total_food,
+                GROUP_CONCAT(p.memo SEPARATOR '\n') as all_memos,
+                -- ★ここからカスタム項目の集計ロジック
+                (
+                    SELECT GROUP_CONCAT(CONCAT(ci.id, ':', agg.val))
+                    FROM custom_item ci
+                    LEFT JOIN (
+                        -- 各項目について SUM か LATEST(MAX(id)) かを判定して集計
+                        SELECT 
+                            civ.custom_item_id,
+                            CASE 
+                                WHEN i.calc_type = 'SUM' THEN SUM(civ.value)
+                                ELSE (SELECT value FROM custom_item_value WHERE id = MAX(civ.id))
+                            END as val
+                        FROM custom_item_value civ
+                        JOIN custom_item i ON civ.custom_item_id = i.id
+                        JOIN pet_records pr ON civ.pet_record_id = pr.id
+                        WHERE DATE(pr.created_at) = DATE(p.created_at)
+                        GROUP BY civ.custom_item_id
+                    ) agg ON ci.id = agg.custom_item_id
+                    WHERE ci.username = :username
+                ) as aggregated_custom_values
+            FROM pet_records p
+            WHERE p.username = :username
+            GROUP BY DATE(p.created_at)
         ) sums ON r.id = sums.last_id
         ORDER BY r.created_at DESC
         """, nativeQuery = true)
-    List<PetRecord> findDailyTotalsByUsername(@Param("username") String username);
+    List<Object[]> findDailyTotalsWithCustomAggregated(@Param("username") String username);
 }

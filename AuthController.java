@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AuthController {
@@ -29,24 +30,23 @@ public class AuthController {
      */
     @PostMapping("/register")
     public String registerUser(@RequestParam("username") String username, 
-                               @RequestParam("password") String password) {
+                               @RequestParam("password") String password,
+                               RedirectAttributes redirectAttributes) {
         
-        // 1. 新しいユーザーオブジェクトを作成
+        // 重複チェック
+        if (userRepository.existsById(username)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "そのユーザーIDは既に使用されています。");
+            return "redirect:/register";
+        }
+        
         User user = new User();
         user.setUsername(username);
-        
-        // 2. パスワードを暗号化（ハッシュ化）してセット
-        // 生のパスワードをそのままDBに入れるのは非常に危険なため、必ず暗号化します
         user.setPassword(passwordEncoder.encode(password));
-        user.setEnabled(true); // アカウントを有効に設定
+        user.setEnabled(true);
         
-        // 3. データベースに保存
         userRepository.save(user);
-        
-        // 4. 登録完了後、ログイン画面へリダイレクト
         return "redirect:/login?register_success";
     }
-
     /**
      * ログイン画面を表示する
      */

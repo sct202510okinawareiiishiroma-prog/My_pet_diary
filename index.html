@@ -7,6 +7,9 @@
 	<link rel="stylesheet" th:href="@{/css/main.css}">
 	<link rel="stylesheet" th:href="@{/css/common.css}">
 	<script th:src="@{/js/weather.js}" defer></script>
+	<script th:src="@{/js/custom-item-modal.js}" defer></script>
+	<script th:src="@{/js/validation.js}" defer></script>
+
 </head>
 
 <body>
@@ -41,7 +44,7 @@
 		</div>
 
 		<section class="weather-area">
-			<h3>地域のお天気情報を確認</h3>
+			<h2>地域のお天気情報を確認</h2>
 			<select id="region-select" class="diary-input" onchange="updateWeatherPreview()">
 				<option value="">地域を選択してください</option>
 				<option value="35.6895,139.6917">東京</option>
@@ -61,22 +64,33 @@
 
 				<div class="form-group">
 					<label>体重 (kg):</label>
-					<input type="number" step="0.01" th:field="*{weight}" class="diary-input">
+					<input type="number" step="0.01" th:field="*{weight}" class="diary-input" inputmode="decimal">
 				</div>
 
 				<div class="form-group">
 					<label>気温 (°C):</label>
-					<input type="number" step="0.1" id="temp-input" th:field="*{temperature}" class="diary-input">
+					<input type="number" step="0.1" id="temp-input" th:field="*{temperature}" class="diary-input"
+						inputmode="decimal">
 				</div>
 
 				<div class="form-group">
 					<label>湿度 (%):</label>
-					<input type="number" id="humi-input" th:field="*{humidity}" class="diary-input">
+					<input type="number" id="humi-input" th:field="*{humidity}" class="diary-input" inputmode="decimal">
 				</div>
 
 				<div class="form-group">
 					<label>ごはん (g):</label>
-					<input type="number" step="0.1" th:field="*{food}" class="diary-input">
+					<input type="number" step="0.1" th:field="*{food}" class="diary-input" inputmode="decimal">
+				</div>
+
+				<div th:each="item : ${customItems}" class="form-group">
+					<label th:text="${item.itemName} + ( ${item.calcType == 'SUM'} ? ' (計)' : ' (最新)' ) + ':'"
+						class="clickable-item-name" th:onclick="openEditModal([[${item.id}]], [[${item.itemName}]])"
+						style="display: inline-block; margin-bottom: 5px;">
+					</label>
+
+					<input type="number" step="0.1" th:name="'customItem_' + ${item.id}" class="diary-input"
+						th:placeholder="${item.itemName} + 'を入力'">
 				</div>
 
 				<div class="form-group">
@@ -89,45 +103,91 @@
 			</form>
 		</section>
 
-		<hr>
+		<div class="custom-item-add-area">
+			<button type="button" class="btn-add-item" onclick="openModal()">＋ 項目を追加</button>
+		</div>
 
+		<dialog id="customItemModal">
+			<div class="modal-content">
+				<span class="close" onclick="closeModal()">&times;</span>
+
+				<h3 id="modalTitle">項目の追加</h3>
+
+				<form id="customItemForm" method="post" th:action="@{/custom-item/save}">
+					<input type="hidden" id="itemId" name="id">
+
+					<div class="form-group">
+						<label for="itemNameInput">項目名 (例: おやつ, 散歩):</label>
+						<input type="text" id="itemNameInput" name="itemName" class="diary-input" placeholder="項目名を入力"
+							required>
+					</div>
+
+					<div id="calcTypeArea" class="radio-group">
+						<p>集計タイプ:</p>
+						<label><input type="radio" name="calcType" value="SUM" checked> 合計 (1日の合計値を出す)</label><br>
+						<label><input type="radio" name="calcType" value="LATEST"> 最新 (最後にいれた値を出す)</label>
+					</div>
+
+					<div class="modal-action-buttons">
+						<button type="submit" class="btn btn-paw">
+							<span class="paw-icon">🐾</span>保存
+						</button>
+
+						<button type="button" id="deleteButton" class="btn-delete" onclick="handleDelete()">
+							この項目を削除
+						</button>
+					</div>
+				</form>
+			</div>
+		</dialog>
+
+		<hr>
 		<section class="list-section">
-			<h2>これまでの記録</h2>
+			<h3>これまでの記録</h3>
 			<table class="diary-table">
-    <thead>
-        <tr>
-            <th>日時</th>
-            <th>体重</th>
-            <th>気温</th>
-            <th>湿度</th>
-            <th>ごはん</th>
-            <th>メモ</th> <th>操作</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr th:each="r : ${records}">
-            <td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd')}"></td>
-            <td th:text="${r.weight != null ? r.weight + 'kg' : '-'}"></td>
-            <td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
-            <td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
-            <td th:text="${r.food != null ? r.food + 'g' : '0g'}"></td>
-            <td>
-                <details th:if="${r.memo != null and !r.memo.empty}">
-                    <summary style="cursor: pointer; list-style: none;">
-                        <span class="memo-toggle-icon">💬 メモを見る</span>
-                    </summary>
-                    <div class="memo-content" style="white-space: pre-wrap; margin-top: 5px; font-size: 0.9em; color: #555;" th:text="${r.memo}"></div>
-                </details>
-                <span th:if="${r.memo == null or r.memo.empty}">-</span>
-            </td>
-            <td>
-                <a th:href="@{/edit/{id}(id=${r.id})}" class="btn-edit">編集</a>
-                <a th:href="@{/delete/{id}(id=${r.id})}" class="btn-delete"
-                    onclick="return confirm('本当に削除しますか？')">削除</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+				<thead>
+					<tr>
+						<th>日時</th>
+						<th>体重</th>
+						<th>気温</th>
+						<th>湿度</th>
+						<th>ごはん</th>
+						<th th:each="item : ${customItems}" th:text="${item.itemName}"></th>
+						<th>メモ</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="r : ${records}">
+						<td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd')}"></td>
+						<td th:text="${r.weight != null ? r.weight + 'kg' : '-'}"></td>
+						<td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
+						<td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
+						<td th:text="${r.food != null ? r.food + 'g' : '0g'}"></td>
+						<td th:each="item : ${customItems}">
+							<span th:each="val : ${r.customValues}" th:if="${val.customItem.id == item.id}"
+								th:text="${val.value}">
+							</span>
+						</td>
+						<td>
+							<details th:if="${r.memo != null and !r.memo.empty}">
+								<summary style="cursor: pointer; list-style: none;">
+									<span class="memo-toggle-icon">💬 メモを見る</span>
+								</summary>
+								<div class="memo-content"
+									style="white-space: pre-wrap; margin-top: 5px; font-size: 0.9em; color: #555;"
+									th:text="${r.memo}"></div>
+							</details>
+							<span th:if="${r.memo == null or r.memo.empty}">-</span>
+						</td>
+						<td>
+							<a th:href="@{/edit/{id}(id=${r.id})}" class="btn-edit">編集</a>
+							<a th:href="@{/delete/{id}(id=${r.id})}" class="btn-delete"
+								onclick="return confirm('本当に削除しますか？')">削除</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		</section>
 	</div>
 </body>

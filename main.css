@@ -2,202 +2,321 @@
 
 /* ヘッダーのレイアウト */
 .main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 /* --- 写真表示エリア関連（ここに集約） --- */
 .photo-display-area {
-    text-align: center;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #fdfdfd;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+	text-align: center;
+	margin-bottom: 20px;
+	padding: 15px;
+	background: #fdfdfd;
+	border-radius: 8px;
+	border: 1px solid #ddd;
 }
 
 .pet-photo {
-    max-width: 100%;
-    height: auto;
-    max-height: 250px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+	max-width: 100%;
+	height: auto;
+	max-height: 250px;
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .no-photo-placeholder {
-    width: 100%;
-    max-width: 250px;
-    height: 150px;
-    background-color: #e0e0e0;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    color: #666;
+	width: 100%;
+	max-width: 250px;
+	height: 150px;
+	background-color: #e0e0e0;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 10px;
+	color: #666;
 }
 
 /* 肉球ボタン関連（黒肉球） */
 .photo-upload-controls {
-    margin-top: 15px;
+	margin-top: 15px;
 }
 
 .btn-paw {
-    display: inline-flex;
-    align-items: center;
-    background-color: #f0f0f0;
-    color: #333333;
-    padding: 10px 25px;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 4px 0 #cccccc;
-    transition: all 0.2s;
-    border: 2px solid #333333;
-    margin-top: 10px;
+	display: inline-flex;
+	align-items: center;
+	background-color: #f0f0f0;
+	color: #333333;
+	padding: 10px 25px;
+	border-radius: 50px;
+	cursor: pointer;
+	font-weight: bold;
+	box-shadow: 0 4px 0 #cccccc;
+	transition: all 0.2s;
+	border: 2px solid #333333;
+	margin-top: 10px;
 }
 
 .paw-icon {
-    font-size: 1.4em;
-    margin-right: 8px;
-    color: #000000; /* 黒肉球 */
+	font-size: 1.4em;
+	margin-right: 8px;
+	color: #000000;
+	/* 黒肉球 */
 }
 
 /* ホバー（マウスをのせた時） */
 .btn-paw:hover {
-    background-color: #e0e0e0;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 0 #cccccc;
+	background-color: #e0e0e0;
+	transform: translateY(-2px);
+	box-shadow: 0 6px 0 #cccccc;
 }
 
 /* クリックした時 */
 .btn-paw:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 #cccccc;
+	transform: translateY(2px);
+	box-shadow: 0 2px 0 #cccccc;
 }
 
 /* 天気エリアのレイアウト */
 .weather-area {
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border: 1px solid #eee; 
+	margin-bottom: 20px;
+	padding: 15px;
+	background: #f9f9f9;
+	border-radius: 8px;
+	border: 1px solid #eee;
 }
 
 /* 天気入力ボタンの調整 */
 .btn-weather-apply {
-    width: auto;
+	width: auto;
 }
 
 /* 現在のお天気プレビュー */
 .weather-preview {
-    margin-left: 15px;
-    font-weight: bold;
-    color: #555;
-    background-color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: 1px dashed #ccc;
-    display: inline-block;
-    vertical-align: middle;
+	margin-left: 15px;
+	font-weight: bold;
+	color: #555;
+	background-color: #fff;
+	padding: 4px 8px;
+	border-radius: 4px;
+	border: 1px dashed #ccc;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 /* --- 日記投稿フォームのパーツ --- */
 
 /* 入力欄の共通スタイル（体重・気温・湿度・メモ） */
 .diary-input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    margin-bottom: 10px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+	width: 100%;
+	padding: 8px;
+	margin-top: 5px;
+	margin-bottom: 10px;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 4px;
 }
 
 /* 編集キャンセルリンク */
 .post-section .link-cancel {
-    margin-left: 10px;
-    text-decoration: none;
-    color: #666;
-    font-size: 0.9em;
+	margin-left: 10px;
+	text-decoration: none;
+	color: #666;
+	font-size: 0.9em;
 }
 
 .post-section .link-cancel:hover {
-    text-decoration: underline;
-    color: #333;
+	text-decoration: underline;
+	color: #333;
 }
 
 .region-select-box {
-    width: auto;
-    display: inline-block;
-    margin-right: 10px;
-    padding: 4px; 
+	width: auto;
+	display: inline-block;
+	margin-right: 10px;
+	padding: 4px;
 }
 
 /* --- 履歴テーブル関連の追加スタイル --- */
 
 .diary-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
 }
 
-.diary-table th, .diary-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: center;
+.diary-table th,
+.diary-table td {
+	padding: 10px;
+	border: 1px solid #ddd;
+	text-align: center;
 }
 
 .diary-table th {
-    background-color: #f2f2f2;
+	background-color: #f2f2f2;
 }
 
 /* メモトグル(details)用スタイル */
 .memo-summary {
-    cursor: pointer;
-    font-size: 0.9em;
-    color: #0066cc;
-    list-style: none; /* デフォルトの矢印を消す */
-    outline: none;
-    text-decoration: underline;
+	cursor: pointer;
+	font-size: 0.9em;
+	color: #0066cc;
+	list-style: none;
+	/* デフォルトの矢印を消す */
+	outline: none;
+	text-decoration: underline;
 }
 
 .memo-summary::-webkit-details-marker {
-    display: none; /* Safari用 */
+	display: none;
+	/* Safari用 */
 }
 
 .memo-content {
-    background: #f9f9f9;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #eee;
-    margin-top: 5px;
-    white-space: pre-wrap; /* 改行を有効にする */
-    text-align: left;
-    font-size: 0.9em;
+	background: #f9f9f9;
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid #eee;
+	margin-top: 5px;
+	white-space: pre-wrap;
+	/* 改行を有効にする */
+	text-align: left;
+	font-size: 0.9em;
 }
 
 /* 操作ボタンのレイアウト */
 .action-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+	display: flex;
+	justify-content: center;
+	gap: 10px;
 }
 
 .btn-edit {
-    color: #0066cc;
-    text-decoration: none;
+	color: #0066cc;
+	text-decoration: none;
 }
 
 .btn-delete {
+	background: none;
+	border: none;
+	color: red;
+	cursor: pointer;
+	padding: 0;
+	font-size: inherit;
+	text-decoration: underline;
+}
+
+/* --- カスタム項目追加モーダル (dialog) --- */
+
+/*  項目名をクリックできるようにする設定 */
+.clickable-item-name {
+    cursor: pointer;
+    color: #0066cc;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+/*  モーダル内のボタン（保存・削除）を横並びにする設定 */
+.modal-action-buttons {
+    display: flex;
+    justify-content: space-between; /* 保存と削除を左右に振り分ける */
+    align-items: center;
+    margin-top: 25px;
+}
+
+/*  削除ボタンを赤色のリンク風にする設定 */
+.btn-delete {
     background: none;
     border: none;
-    color: red;
+    color: #e53e3e;
     cursor: pointer;
-    padding: 0;
-    font-size: inherit;
     text-decoration: underline;
+    font-size: 0.9em;
+}
+
+.btn-delete:hover {
+    color: #c53030;
+    font-weight: bold;
+}
+
+/* モーダル自体のスタイル */
+#customItemModal {
+    border: none;
+    border-radius: 12px;
+    padding: 0; /* 内部のコンテンツでパディングを調整するため一旦0に */
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    /* 画面中央に配置（dialogのデフォルトを活かす） */
+}
+
+/* モーダル内部のコンテンツ容器 */
+.modal-content {
+    background-color: #fff;
+    padding: 25px;
+    position: relative;
+}
+
+/* 背景（暗幕）のスタイル - dialog特有の擬似要素 */
+#customItemModal::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    /* backdrop-filterを使える環境なら、背景をぼかすとおしゃれになります */
+    backdrop-filter: blur(3px);
+}
+
+/* 閉じるボタン (×) */
+.close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.close:hover {
+    color: #333;
+}
+
+/* ＋ 項目を追加ボタンのエリア */
+.custom-item-add-area {
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* ＋ 項目を追加ボタン自体の装飾 */
+.btn-add-item {
+    background-color: #f9f9f9;
+    border: 2px dashed #cbd5e0;
+    color: #4a5568;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+}
+
+.btn-add-item:hover {
+    background-color: #edf2f7;
+    border-color: #a0aec0;
+    color: #2d3748;
+}
+
+/* ラジオボタンのグループ */
+.radio-group {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f7fafc;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.radio-group label {
+    display: inline-block;
+    margin-bottom: 8px;
+    cursor: pointer;
 }
