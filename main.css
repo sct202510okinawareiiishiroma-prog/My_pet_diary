@@ -140,71 +140,83 @@
 
 /* --- 履歴テーブル関連の追加スタイル --- */
 
-.diary-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 20px;
+/* --- 履歴テーブル関連のスタイル（改善版） --- */
+
+.record-table {
+    width: 100%;
+    border-collapse: collapse; /* 隣り合う枠線を一つにまとめる */
+    margin-top: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* ほんのり浮き上がらせる */
 }
 
-.diary-table th,
-.diary-table td {
-	padding: 10px;
-	border: 1px solid #ddd;
-	text-align: center;
+/* ヘッダーの設定 */
+.record-table th {
+    background-color: #f8f9fa; /* 薄いグレー */
+    color: #5d4037; /* ブラウン（文字色） */
+    padding: 15px 10px; /* 余白を広げて見やすく */
+    border-bottom: 2px solid #ffcc80; /* 肉球色のアクセント線 */
+    font-size: 0.95em;
+    font-weight: bold;
 }
 
-.diary-table th {
-	background-color: #f2f2f2;
+/* 各セルの設定 */
+.record-table td {
+    padding: 14px 10px; /* 行の間隔を広げる */
+    border-bottom: 1px solid #eee; /* 薄い区切り線 */
+    text-align: center;
+    vertical-align: middle;
+    color: #444;
 }
 
-/* メモトグル(details)用スタイル */
-.memo-summary {
-	cursor: pointer;
-	font-size: 0.9em;
-	color: #0066cc;
-	list-style: none;
-	/* デフォルトの矢印を消す */
-	outline: none;
-	text-decoration: underline;
+/* 1行おきに背景色を変える（シマシマ模様） */
+.record-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
 }
 
-.memo-summary::-webkit-details-marker {
-	display: none;
-	/* Safari用 */
+/* マウスを乗せたときに行をハイライト */
+.record-table tbody tr:hover {
+    background-color: #fff9f0;
+    transition: background-color 0.2s;
+}
+
+/* メモトグル(details)の調整 */
+.memo-toggle-icon {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: #495057;
 }
 
 .memo-content {
-	background: #f9f9f9;
-	padding: 8px;
-	border-radius: 4px;
-	border: 1px solid #eee;
-	margin-top: 5px;
-	white-space: pre-wrap;
-	/* 改行を有効にする */
-	text-align: left;
-	font-size: 0.9em;
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #ffcc80;
+    border-radius: 6px;
+    margin-top: 8px;
+    text-align: left; /* メモは左寄せの方が読みやすい */
+    line-height: 1.5;
 }
 
-/* 操作ボタンのレイアウト */
+/* 操作ボタンの調整 */
 .action-buttons {
-	display: flex;
-	justify-content: center;
-	gap: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
 }
 
 .btn-edit {
-	color: #0066cc;
-	text-decoration: none;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-.btn-delete {
-	background: none;
-	border: none;
-	color: red;
-	cursor: pointer;
-	padding: 0;
-	font-size: inherit;
-	text-decoration: underline;
+.btn-edit:hover {
+    text-decoration: underline;
 }
 
 /* --- カスタム項目追加モーダル (dialog) --- */
@@ -318,5 +330,76 @@
 .radio-group label {
     display: inline-block;
     margin-bottom: 8px;
+    cursor: pointer
+}
+/* --- 絞り込み機能のスタイル --- */
+.filter-section {
+    margin: 15px 0;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    overflow: hidden; /* 子要素のはみ出し防止 */
+}
+
+/* 絞り込みの親ボタン（開閉スイッチ） */
+.btn-filter-toggle {
+    width: 100%;
+    padding: 12px 15px;
+    background: #fffaf0; /* ほんのりクリーム色 */
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
+    font-size: 1rem;
+    color: #5d4037; /* ブラウン系 */
+    font-weight: bold;
+}
+
+.btn-filter-toggle:hover {
+    background-color: #f5f0e6;
+}
+
+/* 矢印アイコンの動き */
+.arrow-icon {
+    transition: transform 0.3s ease;
+}
+
+.btn-filter-toggle.open .arrow-icon {
+    transform: rotate(180deg); /* 開いている時は上向き */
+}
+
+/* 選択肢（ボタン）を並べるエリア */
+.filter-options {
+    display: none; /* 初期状態は隠す（JSで制御） */
+    padding: 10px;
+    background-color: #fff;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-top: 1px solid #eee;
+}
+
+/* 絞り込みボタン自体のスタイル */
+.filter-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    text-decoration: none;
+    color: #666;
+    background-color: #f0f0f0;
+    border-radius: 20px; /* 丸みをつけて可愛く */
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+    text-decoration: none;
+}
+
+/* 現在選択されている期間のスタイル */
+.filter-btn.active {
+    background-color: #ffcc80; /* 肉球ボタンに近いオレンジ系 */
+    color: #fff;
+    font-weight: bold;
 }

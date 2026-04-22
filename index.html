@@ -9,7 +9,7 @@
 	<script th:src="@{/js/weather.js}" defer></script>
 	<script th:src="@{/js/custom-item-modal.js}" defer></script>
 	<script th:src="@{/js/validation.js}" defer></script>
-
+	<script th:src="@{/js/filter.js}"></script>
 </head>
 
 <body>
@@ -58,7 +58,7 @@
 		</section>
 
 		<section class="form-section">
-			<h2 th:text="${editingRecord.id != null} ? '記録を編集する' : '今日の記録をつける'">今日の記録をつける</h2>
+			<h2 th:if="${editingRecord?.id != null} ? '記録を編集する' : '今日の記録をつける'">今日の記録をつける</h2>
 			<form th:action="@{/save}" th:object="${editingRecord}" method="post">
 				<input type="hidden" th:field="*{id}">
 
@@ -98,97 +98,120 @@
 					<textarea th:field="*{memo}" rows="3" placeholder="体調や様子など" class="diary-input"></textarea>
 				</div>
 
-				<button type="submit" class="btn" th:text="${editingRecord.id != null} ? '更新する' : '保存する'">保存する</button>
-				<a th:if="${editingRecord.id != null}" th:href="@{/}" class="link-cancel">キャンセル</a>
+				<button type="submit" class="btn" th:text="${editingRecord?.id != null} ? '更新する' : '保存する'">保存する</button>
+				<a th:if="${editingRecord?.id != null}" th:href="@{/}" class="link-cancel">キャンセル</a>
 			</form>
 		</section>
 
 		<div class="custom-item-add-area">
-			<button type="button" class="btn-add-item" onclick="openModal()">＋ 項目を追加</button>
+			<button type="button" class="btn-paw" onclick="openModal()">
+				<span>🐾 項目を追加・管理</span>
+			</button>
+			<div class="current-custom-items">
+				<span th:each="item : ${customItems}" class="custom-item-tag" th:text="${item.itemName}"
+					th:onclick="'openEditModal(' + ${item.id} + ', \'' + ${item.itemName} + '\')'">
+				</span>
+			</div>
 		</div>
 
 		<dialog id="customItemModal">
 			<div class="modal-content">
-				<span class="close" onclick="closeModal()">&times;</span>
-
+				<span class="close" onclick="document.getElementById('customItemModal').close()">&times;</span>
 				<h3 id="modalTitle">項目の追加</h3>
-
-				<form id="customItemForm" method="post" th:action="@{/custom-item/save}">
+				<form id="customItemForm" method="post">
 					<input type="hidden" id="itemId" name="id">
-
 					<div class="form-group">
-						<label for="itemNameInput">項目名 (例: おやつ, 散歩):</label>
-						<input type="text" id="itemNameInput" name="itemName" class="diary-input" placeholder="項目名を入力"
-							required>
+						<label for="itemNameInput">項目名</label>
+						<input type="text" id="itemNameInput" name="itemName" required placeholder="例：お散歩">
 					</div>
-
-					<div id="calcTypeArea" class="radio-group">
-						<p>集計タイプ:</p>
-						<label><input type="radio" name="calcType" value="SUM" checked> 合計 (1日の合計値を出す)</label><br>
-						<label><input type="radio" name="calcType" value="LATEST"> 最新 (最後にいれた値を出す)</label>
+					<div id="calcTypeArea" class="form-group">
+						<label>集計方法</label>
+						<div class="radio-group">
+							<label><input type="radio" name="calcType" value="SUM" checked> 合計</label>
+							<label><input type="radio" name="calcType" value="LATEST"> 最新値</label>
+						</div>
 					</div>
-
-					<div class="modal-action-buttons">
-						<button type="submit" class="btn btn-paw">
-							<span class="paw-icon">🐾</span>保存
-						</button>
-
-						<button type="button" id="deleteButton" class="btn-delete" onclick="handleDelete()">
-							この項目を削除
-						</button>
+					<div class="modal-buttons">
+						<button type="submit" class="btn-save">保存</button>
+						<button type="button" id="deleteButton" class="btn-delete-modal"
+							onclick="handleDelete()">削除</button>
 					</div>
 				</form>
 			</div>
 		</dialog>
 
-		<hr>
-		<section class="list-section">
-			<h3>これまでの記録</h3>
-			<table class="diary-table">
-				<thead>
-					<tr>
-						<th>日時</th>
-						<th>体重</th>
-						<th>気温</th>
-						<th>湿度</th>
-						<th>ごはん</th>
-						<th th:each="item : ${customItems}" th:text="${item.itemName}"></th>
-						<th>メモ</th>
-						<th>操作</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="r : ${records}">
-						<td th:text="${#temporals.format(r.createdAt, 'yyyy/MM/dd')}"></td>
-						<td th:text="${r.weight != null ? r.weight + 'kg' : '-'}"></td>
-						<td th:text="${r.temperature != null ? r.temperature + '°C' : '-'}"></td>
-						<td th:text="${r.humidity != null ? r.humidity + '%' : '-'}"></td>
-						<td th:text="${r.food != null ? r.food + 'g' : '0g'}"></td>
-						<td th:each="item : ${customItems}">
-							<span th:each="val : ${r.customValues}" th:if="${val.customItem.id == item.id}"
-								th:text="${val.value}">
-							</span>
-						</td>
-						<td>
-							<details th:if="${r.memo != null and !r.memo.empty}">
-								<summary style="cursor: pointer; list-style: none;">
-									<span class="memo-toggle-icon">💬 メモを見る</span>
-								</summary>
-								<div class="memo-content"
-									style="white-space: pre-wrap; margin-top: 5px; font-size: 0.9em; color: #555;"
-									th:text="${r.memo}"></div>
-							</details>
-							<span th:if="${r.memo == null or r.memo.empty}">-</span>
-						</td>
-						<td>
-							<a th:href="@{/edit/{id}(id=${r.id})}" class="btn-edit">編集</a>
-							<a th:href="@{/delete/{id}(id=${r.id})}" class="btn-delete"
-								onclick="return confirm('本当に削除しますか？')">削除</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</section>
+		<h2>これまでの記録</h2>
+
+		<div class="filter-section">
+			<button type="button" class="btn-filter-toggle" id="filterToggle">
+				<span id="currentModeText">
+					絞り込み：<span th:text="${currentMode == 'day' ? '今日' : 
+                                   currentMode == 'week' ? '最近1週間' : 
+                                   currentMode == 'month' ? '今月' : 
+                                   currentMode == 'year' ? '今年' : '全期間'}">今日</span>
+				</span>
+				<span class="arrow-icon">▼</span>
+			</button>
+			<div class="filter-options" id="filterOptions">
+				<a th:href="@{/(mode='day')}" class="filter-btn"
+					th:classappend="${currentMode == 'day'} ? 'active'">今日</a>
+				<a th:href="@{/(mode='week')}" class="filter-btn"
+					th:classappend="${currentMode == 'week'} ? 'active'">最近1週間</a>
+				<a th:href="@{/(mode='month')}" class="filter-btn"
+					th:classappend="${currentMode == 'month'} ? 'active'">今月</a>
+				<a th:href="@{/(mode='year')}" class="filter-btn"
+					th:classappend="${currentMode == 'year'} ? 'active'">今年</a>
+				<a th:href="@{/(mode='all')}" class="filter-btn"
+					th:classappend="${currentMode == 'all'} ? 'active'">全期間</a>
+			</div>
+		</div>
+
+		<table class="record-table">
+			<thead>
+				<tr>
+					<th>日付</th>
+					<th>体重</th>
+					<th>気温</th>
+					<th>湿度</th>
+					<th>ごはん</th>
+					<th th:each="item : ${customItems}" th:text="${item.itemName}"></th>
+					<th>メモ</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="r : ${records}">
+					<td th:text="${r[0]}"></td>
+					<td th:text="${r[1] != null ? r[1] + 'kg' : '-'}"></td>
+					<td th:text="${r[2] != null ? r[2] + '°C' : '-'}"></td>
+					<td th:text="${r[3] != null ? r[3] + '%' : '-'}"></td>
+					<td th:text="${r[4] != null ? r[4] + 'g' : '0g'}"></td>
+					<td th:each="item : ${customItems}">
+						<span th:each="pair : ${#strings.arraySplit(r[5], ',')}"
+							th:if="${r[5] != null and #strings.arraySplit(pair, ':')[0] == #strings.toString(item.id)}"
+							th:text="${#strings.arraySplit(pair, ':')[1]}">
+						</span>
+					</td>
+
+					<td>
+						<details th:if="${r[6] != null and !#strings.isEmpty(r[6])}">
+							<summary style="cursor: pointer; list-style: none;">
+								<span class="memo-toggle-icon">💬 メモを見る</span>
+							</summary>
+							<div class="memo-content" th:text="${r[6]}"></div>
+						</details>
+					</td>
+					<td>
+						<div class="action-buttons">
+							<a th:href="@{/edit/{id}(id=${r[7]})}" class="btn-edit">編集</a>
+							<form th:action="@{/delete/{id}(id=${r[7]})}" method="post" style="display:inline;">
+								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+							</form>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
 </body>
 

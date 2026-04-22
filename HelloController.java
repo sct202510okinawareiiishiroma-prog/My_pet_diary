@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,46 +31,62 @@ public class HelloController {
 	@Autowired
 	private UserRepository userRepository;
 
-	// 【追加】カスタム項目用のリポジトリを注入
 	@Autowired
 	private CustomItemRepository customItemRepository;
 
-	@GetMapping("/")
-	public String index(Model model, Principal principal) {
-		String username = principal.getName();
-
-		// --個人データ（健康記録）取得--
-		List<PetRecord> records = repository.findDailyTotalsByUsername(username);
-		model.addAttribute("records", records);
-
-		// 全ての項目ではなく、IsEnabled が true（有効）なものだけを取得するように変更
-	    List<CustomItem> customItems = customItemRepository.findByUsernameAndIsEnabledTrue(username);
-	    model.addAttribute("customItems", customItems);
-
-		// --ユーザー情報を取得して画面に渡す--
-		Optional<User> userOpt = userRepository.findById(username);
-		if (userOpt.isPresent()) {
-			model.addAttribute("user", userOpt.get());
-		}
-
-		model.addAttribute("editingRecord", new PetRecord());
-		return "index";
-	}
-	
-	// クラス冒頭のAutowiredに追加
 	@Autowired
 	private CustomItemValueRepository customItemValueRepository;
 
+	@Autowired
+	private RecordSearchService recordSearchService;
+
+	@GetMapping("/")
+	public String index(
+			@RequestParam(name = "mode", defaultValue = "day") String mode,
+			Model model, 
+			Principal principal) {
+		
+		String username = principal.getName();
+
+		// 期間計算とデータ取得
+		Map<String, LocalDateTime> period = recordSearchService.calculatePeriod(mode);
+		LocalDateTime start = period.get("start");
+		LocalDateTime end = period.get("end");
+
+		List<Object[]> records = repository.findDailyTotalsByPeriodWithCustomAggregated(username, start, end);
+		
+		model.addAttribute("records", records);
+		model.addAttribute("currentMode", mode);
+		
+		// 【追加】新規登録用の空のオブジェクトを渡す
+	    if (!model.containsAttribute("editingRecord")) {
+	        model.addAttribute("editingRecord", new PetRecord());
+	    }
+
+		// 有効なカスタム項目の取得
+	    List<CustomItem> customItems = customItemRepository.findByUsernameAndIsEnabledTrue(username);
+	    model.addAttribute("customItems", customItems);
+
+		// 写真取得
+	    Optional<User> userOpt = userRepository.findById(username);
+	    if (userOpt.isPresent()) {
+	        // "user" という名前でオブジェクトを渡す
+	        model.addAttribute("user", userOpt.get());
+	    }
+		return "index";
+	}
+
+	// ★ 復活：保存・更新処理（カスタム項目対応）
 	@PostMapping("/save")
 	public String save(
 	        @ModelAttribute PetRecord record, 
-	        @RequestParam Map<String, String> allParams, // すべてのリクエストパラメータを受け取る
+	        @RequestParam Map<String, String> allParams, 
 	        Principal principal) {
 	    
 	    String username = principal.getName();
 	    PetRecord savedRecord;
 
-	    // 1. 通常の記録（体重、気温など）を保存
+	    // 1. 通常の記録（体重、気温など）を保存または更新
 	    if (record.getId() != null) {
 	        Optional<PetRecord> existingOpt = repository.findById(record.getId());
 	        if (existingOpt.isPresent() && existingOpt.get().getUsername().equals(username)) {
@@ -89,47 +106,42 @@ public class HelloController {
 	    }
 
 	    // 2. 動的なカスタム項目の値を保存
-	    // 送信された全パラメータから "customItem_" で始まるものを探す
 	    for (String key : allParams.keySet()) {
 	        if (key.startsWith("customItem_")) {
 	            try {
-	                // keyは "customItem_5" のような形式なので、"_" 以降のIDを取り出す
 	                Long itemId = Long.parseLong(key.split("_")[1]);
 	                String valueStr = allParams.get(key);
 
 	                if (valueStr != null && !valueStr.isEmpty()) {
 	                    Double value = Double.parseDouble(valueStr);
-
-	                    // 値保存用のエンティティを作成して保存
 	                    CustomItemValue valEntity = new CustomItemValue();
-	                    valEntity.setPetRecord(savedRecord); // どの日の記録か
-	                    valEntity.setCustomItem(customItemRepository.findById(itemId).orElse(null)); // どの項目か
+	                    valEntity.setPetRecord(savedRecord);
+	                    valEntity.setCustomItem(customItemRepository.findById(itemId).orElse(null));
 	                    valEntity.setValue(value);
-	                    
 	                    customItemValueRepository.save(valEntity);
 	                }
 	            } catch (Exception e) {
-	                // 数値変換エラーなどはログに出力してスキップ（現場では適切にハンドリングします）
 	                e.printStackTrace();
 	            }
 	        }
 	    }
-
-	    return "redirect:/";
+	    return "redirect:/?mode=day";
 	}
 
+	// ★ 復活：編集画面表示
 	@GetMapping("/edit/{id}")
 	public String edit(@PathVariable("id") Long id, Model model, Principal principal) {
 		Optional<PetRecord> recordOpt = repository.findById(id);
 		if (recordOpt.isPresent() && recordOpt.get().getUsername().equals(principal.getName())) {
 			model.addAttribute("editingRecord", recordOpt.get());
-			//model.addAttribute("records", repository.findByUsername(principal.getName()));
-			return "index";
+			
+			// 編集画面でもリストを表示する必要があるため、indexと同様の処理を行う
+			return index("day", model, principal); 
 		}
 		return "redirect:/";
 	}
 
-	@GetMapping("/delete/{id}")
+	@PostMapping("/delete/{id}")
 	public String delete(@PathVariable("id") Long id, Principal principal) {
 		Optional<PetRecord> recordOpt = repository.findById(id);
 		if (recordOpt.isPresent() && recordOpt.get().getUsername().equals(principal.getName())) {
@@ -142,40 +154,21 @@ public class HelloController {
 	public String uploadPhoto(@RequestParam("photo") MultipartFile file, Principal principal) {
 		if (!file.isEmpty()) {
 			try {
-				// 1. 保存先フォルダのパスを指定 (プロジェクト直下の user-photos フォルダ)
 				String uploadDir = "user-photos/";
 				Path uploadPath = Paths.get(uploadDir);
-
-				// フォルダが存在しない場合は作成する
-				if (!Files.exists(uploadPath)) {
-					Files.createDirectories(uploadPath);
-				}
-
-				// 2. ファイル名の重複を防ぐため、UUID（ランダムなID）を使ってファイル名を生成
-				// 元のファイル形式に関わらず、リサイズ後は .jpg として統一保存
+				if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+				
 				String fileName = UUID.randomUUID().toString() + ".jpg";
+				Thumbnails.of(file.getInputStream()).size(800, 800).outputFormat("jpg").toFile(uploadDir + fileName);
 
-				// 3. Thumbnailator を使ってリサイズ処理
-				// 幅800px、高さ800pxに収まるようにリサイズ（比率は維持されます）
-				Thumbnails.of(file.getInputStream())
-						.size(800, 800)
-						.outputFormat("jpg")
-						.toFile(uploadDir + fileName);
-
-				// 4. DBには「ファイル名」だけを保存する
-				String username = principal.getName();
-				Optional<User> userOpt = userRepository.findById(username);
-
+				Optional<User> userOpt = userRepository.findById(principal.getName());
 				if (userOpt.isPresent()) {
 					User user = userOpt.get();
-					user.setFavoritePhoto(fileName); // ここでファイル名をセット
+					user.setFavoritePhoto(fileName);
 					userRepository.save(user);
 				}
-
 			} catch (Exception e) {
 				e.printStackTrace();
-				// 実際の運用ではここでエラーメッセージを画面に返す処理を入れますが、
-				// まずは動作確認のためスタックトレースを表示させます
 			}
 		}
 		return "redirect:/";
