@@ -37,6 +37,9 @@ public class HelloController {
 
 	@Autowired
 	private RecordSearchService recordSearchService;
+	
+	@Autowired
+	private CustomItemValueRepository customItemValueRepository;
 
 	@GetMapping("/")
 	public String index(
@@ -81,7 +84,7 @@ public class HelloController {
 		return "index";
 	}
 
-	// ★ 復活：保存・更新処理（カスタム項目対応）
+	// ★：保存・更新処理（カスタム項目対応）
 	@PostMapping("/save")
 	public String save(
 	        @ModelAttribute PetRecord record, 
@@ -89,6 +92,8 @@ public class HelloController {
 	        Principal principal) {
 	    
 	    String username = principal.getName();
+	    PetRecord savedRecord; // ★ ここで先に宣言しておくのがポイントです
+
 	    // 1. 通常の記録（体重、気温など）を保存または更新
 	    if (record.getId() != null) {
 	        Optional<PetRecord> existingOpt = repository.findById(record.getId());
@@ -99,15 +104,37 @@ public class HelloController {
 	            existing.setHumidity(record.getHumidity());
 	            existing.setFood(record.getFood());
 	            existing.setMemo(record.getMemo());
-	            repository.save(existing);
+	            savedRecord = repository.save(existing); // 更新した結果を代入
 	        } else {
 	            return "redirect:/";
 	        }
 	    } else {
 	        record.setUsername(username);
-	        repository.save(record);}
-		return username;
+	        savedRecord = repository.save(record); // 新規保存した結果を代入
 	    }
+
+	    // 2. 「カスタム項目の値」を保存する処理
+	    allParams.forEach((key, value) -> {
+	        if (key.startsWith("customItem_") && value != null && !value.isEmpty()) {
+	            try {
+	                Long itemId = Long.parseLong(key.replace("customItem_", ""));
+	                Double val = Double.parseDouble(value);
+
+	                CustomItemValue itemValue = new CustomItemValue();
+	                // 宣言しておいた savedRecord を使うので、ここでのエラーが消えます
+	                itemValue.setPetRecordId(savedRecord.getId()); 
+	                itemValue.setCustomItemId(itemId);
+	                itemValue.setValue(val);
+
+	                customItemValueRepository.save(itemValue);
+	            } catch (NumberFormatException e) {
+	                // 数値変換エラー時の処理
+	            }
+	        }
+	    });
+
+	    return "redirect:/";
+	}
 
 	//カスタム項目保存用
 	@PostMapping("/customitem")

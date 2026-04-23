@@ -1,51 +1,46 @@
 package com.example.demo;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 @Entity
 @Table(name = "custom_item_value")
+@Data
 public class CustomItemValue {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne
-    @JoinColumn(name = "pet_record_id")
-    private PetRecord petRecord; 
+    // カラム名の重複を避けるため、ID直接保持かオブジェクト保持かどちらかに寄せます
+    // ここではControllerでの使いやすさを優先し、IDを直接扱う設定にします
+    @Column(name = "pet_record_id")
+    private Long petRecordId; 
+
+    @Column(name = "custom_item_id")
+    private Long customItemId; 
     
-    @ManyToOne
-    @JoinColumn(name = "custom_item_id")
-    private CustomItem customItem;
+    @Column(name = "value")
     private Double value;
 
-    // --- 以下、GetterとSetter ---
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    // --- 以下、独自のロジックを持つセッターだけ残す ---
     
-    public PetRecord getPetRecord() { return petRecord; }
-    public void setPetRecord(PetRecord petRecord) { this.petRecord = petRecord; }
-    
-    public CustomItem getCustomItem() { return customItem; }
-    public void setCustomItem(CustomItem customItem) { this.customItem = customItem; }
-    
-    public Double getValue() { return value; }
- // CustomItemValue.java の setValue メソッドを修正
     public void setValue(Double value) {
         if (value != null) {
             if (value < 0) {
                 this.value = 0.0;
-            } else if (value >= 10000) { // 4桁上限 (9999.9)
+            } else if (value >= 10000) { // 4桁上限
                 this.value = 9999.9;
             } else {
                 this.value = value;
             }
         }
     }
+
+    // 標準的な getId, setId, getPetRecordId... などは @Data が作ってくれるので不要
 }
