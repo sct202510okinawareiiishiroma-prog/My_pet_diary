@@ -73,6 +73,10 @@ public class HelloController {
 	        // "user" という名前でオブジェクトを渡す
 	        model.addAttribute("user", userOpt.get());
 	    }
+	    
+	    // カスタム項目新規登録用の空のオブジェクトを渡す
+	    model.addAttribute("customItem", new CustomItem());
+	    
 		return "index";
 	}
 

@@ -118,8 +118,11 @@
 			<div class="modal-content">
 				<span class="close" onclick="document.getElementById('customItemModal').close()">&times;</span>
 				<h3 id="modalTitle">項目の追加</h3>
-				<form id="customItemForm" method="post">
+<!--			<form id="customItemForm" method="post">-->
+				<form th:action="@{/save}" th:object="${customItem}" method="post">
 					<input type="hidden" id="itemId" name="id">
+<!--					<input type="hidden" th:field="*{id}">-->
+					
 					<div class="form-group">
 						<label for="itemNameInput">項目名</label>
 						<input type="text" id="itemNameInput" name="itemName" required placeholder="例：お散歩">

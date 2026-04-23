@@ -44,11 +44,11 @@ public class RecordSearchService {
 			break;
 
 		default:
-            // 案A: 広大な範囲を指定して実質全件表示にする
-            start = LocalDateTime.of(2000, 1, 1, 0, 0);
-            end = LocalDateTime.of(2100, 12, 31, 23, 59);
-            break;
-    }
+			// 案A: 広大な範囲を指定して実質全件表示にする
+			start = LocalDateTime.of(2000, 1, 1, 0, 0);
+			end = LocalDateTime.of(2100, 12, 31, 23, 59);
+			break;
+		}
 		Map<String, LocalDateTime> period = new HashMap<>();
 		period.put("start", start);
 		period.put("end", end);

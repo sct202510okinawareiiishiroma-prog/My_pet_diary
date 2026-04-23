@@ -34,7 +34,7 @@ function setupModal(title, id, name, isEdit) {
     nameInput.value = name;
     
     // フォームのactionを初期状態（保存用）に戻す
-    form.action = "/custom-item/save"; 
+//    form.action = "/save"; 
 
     // 編集モードなら削除ボタンを表示し、集計タイプ選択を隠す（仕様に合わせて調整可）
     if (isEdit) {
