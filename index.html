@@ -84,13 +84,14 @@
 				</div>
 
 				<div th:each="item : ${customItems}" class="form-group">
-					<label th:text="${item.itemName} + ( ${item.calcType == 'SUM'} ? ' (計)' : ' (最新)' ) + ':'"
-						class="clickable-item-name" th:onclick="openEditModal([[${item.id}]], [[${item.itemName}]])"
-						style="display: inline-block; margin-bottom: 5px;">
+					<label th:text="${item?.itemName} + ( ${item.calcType == 'SUM'} ? ' (計)' : ' (最新)' ) + ':'"
+						class="clickable-item-name" style="display: inline-block; margin-bottom: 5px;"
+						th:data-id="${item.id}" th:data-name="${item?.itemName}"
+						onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-name'))">
 					</label>
 
 					<input type="number" step="0.1" th:name="'customItem_' + ${item.id}" class="diary-input"
-						th:placeholder="${item.itemName} + 'を入力'">
+						th:placeholder="${item?.itemName} + 'を入力'">
 				</div>
 
 				<div class="form-group">
@@ -108,8 +109,9 @@
 				<span>🐾 項目を追加・管理</span>
 			</button>
 			<div class="current-custom-items">
-				<span th:each="item : ${customItems}" class="custom-item-tag" th:text="${item.itemName}"
-					th:onclick="'openEditModal(' + ${item.id} + ', \'' + ${item.itemName} + '\')'">
+				<span th:each="item : ${customItems}" class="custom-item-tag" th:text="${item?.itemName}"
+					th:data-id="${item.id}" th:data-name="${item?.itemName}"
+					onclick="openEditModal(this.getAttribute('data-id'), this.getAttribute('data-name'))">
 				</span>
 			</div>
 		</div>
@@ -118,22 +120,24 @@
 			<div class="modal-content">
 				<span class="close" onclick="document.getElementById('customItemModal').close()">&times;</span>
 				<h3 id="modalTitle">項目の追加</h3>
-<!--			<form id="customItemForm" method="post">-->
-				<form th:action="@{/save}" th:object="${customItem}" method="post">
-					<input type="hidden" id="itemId" name="id">
-<!--					<input type="hidden" th:field="*{id}">-->
-					
+
+				<form id="customItemForm" th:action="@{/customitem}" th:object="${customItem}" method="post">
+
+					<input type="hidden" th:field="*{id}" id="itemId">
+
 					<div class="form-group">
 						<label for="itemNameInput">項目名</label>
-						<input type="text" id="itemNameInput" name="itemName" required placeholder="例：お散歩">
+						<input type="text" th:field="*{itemName}" id="itemNameInput" required placeholder="例：お散歩">
 					</div>
+
 					<div id="calcTypeArea" class="form-group">
 						<label>集計方法</label>
 						<div class="radio-group">
-							<label><input type="radio" name="calcType" value="SUM" checked> 合計</label>
-							<label><input type="radio" name="calcType" value="LATEST"> 最新値</label>
+							<label><input type="radio" th:field="*{calcType}" value="SUM"> 合計</label>
+							<label><input type="radio" th:field="*{calcType}" value="LATEST"> 最新値</label>
 						</div>
 					</div>
+
 					<div class="modal-buttons">
 						<button type="submit" class="btn-save">保存</button>
 						<button type="button" id="deleteButton" class="btn-delete-modal"
@@ -177,7 +181,7 @@
 					<th>気温</th>
 					<th>湿度</th>
 					<th>ごはん</th>
-					<th th:each="item : ${customItems}" th:text="${item.itemName}"></th>
+					<th th:each="item : ${customItems}" th:text="${item?.itemName}"></th>
 					<th>メモ</th>
 					<th>操作</th>
 				</tr>
@@ -208,7 +212,8 @@
 						<div class="action-buttons">
 							<a th:href="@{/edit/{id}(id=${r[7]})}" class="btn-edit">編集</a>
 							<form th:action="@{/delete/{id}(id=${r[7]})}" method="post" style="display:inline;">
-								<button type="submit" class="btn-delete" onclick="return confirm('削除しますか？')">削除</button>
+								<button type="submit" class="btn-delete" th:data-confirm-name="${item?.itemName}"
+									onclick="return confirm(this.getAttribute('data-confirm-name') + ' を削除しますか？')">削除</button>
 							</form>
 						</div>
 					</td>

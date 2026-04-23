@@ -17,13 +17,15 @@ public class CustomItem {
 	private Long id;
 
 	private String username;
-	private String itemName;
-	private String calcType; // "SUM" または "LATEST"
-	
-	@Column(name = "is_enabled")
-	private boolean isEnabled = true; // デフォルトは true (表示)
 
-	// Getter と Setter
-	public boolean isEnabled() { return isEnabled; }
-	public void setEnabled(boolean isEnabled) { this.isEnabled = isEnabled; }
-	}
+    // DBのカラム名が 'item_name' の場合。もしDB側が 'name' なら (name = "name") に書き換えてください
+    @Column(name = "item_name") 
+    private String itemName;
+
+    // DBのカラム名が 'calc_type' の場合
+    @Column(name = "calc_type")
+    private String calcType; 
+    
+    @Column(name = "is_enabled")
+    private boolean isEnabled = true;
+}

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,17 +36,14 @@ public class HelloController {
 	private CustomItemRepository customItemRepository;
 
 	@Autowired
-	private CustomItemValueRepository customItemValueRepository;
-
-	@Autowired
 	private RecordSearchService recordSearchService;
 
 	@GetMapping("/")
 	public String index(
 			@RequestParam(name = "mode", defaultValue = "day") String mode,
-			Model model, 
+			Model model,
 			Principal principal) {
-		
+
 		String username = principal.getName();
 
 		// 期間計算とデータ取得
@@ -54,29 +52,32 @@ public class HelloController {
 		LocalDateTime end = period.get("end");
 
 		List<Object[]> records = repository.findDailyTotalsByPeriodWithCustomAggregated(username, start, end);
-		
+
 		model.addAttribute("records", records);
 		model.addAttribute("currentMode", mode);
-		
+
 		// 【追加】新規登録用の空のオブジェクトを渡す
-	    if (!model.containsAttribute("editingRecord")) {
-	        model.addAttribute("editingRecord", new PetRecord());
-	    }
+		if (!model.containsAttribute("editingRecord")) {
+			model.addAttribute("editingRecord", new PetRecord());
+		}
 
 		// 有効なカスタム項目の取得
-	    List<CustomItem> customItems = customItemRepository.findByUsernameAndIsEnabledTrue(username);
-	    model.addAttribute("customItems", customItems);
-
+		List<CustomItem> customItems = customItemRepository.findByUsernameAndIsEnabledTrue(username);
+		if (customItems == null) {
+		    customItems = new ArrayList<>();
+		}
+		model.addAttribute("customItems", customItems);
+		
 		// 写真取得
-	    Optional<User> userOpt = userRepository.findById(username);
-	    if (userOpt.isPresent()) {
-	        // "user" という名前でオブジェクトを渡す
-	        model.addAttribute("user", userOpt.get());
-	    }
-	    
-	    // カスタム項目新規登録用の空のオブジェクトを渡す
-	    model.addAttribute("customItem", new CustomItem());
-	    
+		Optional<User> userOpt = userRepository.findById(username);
+		if (userOpt.isPresent()) {
+			// "user" という名前でオブジェクトを渡す
+			model.addAttribute("user", userOpt.get());
+		}
+
+		// カスタム項目新規登録用の空のオブジェクトを渡す
+		model.addAttribute("customItem", new CustomItem());
+
 		return "index";
 	}
 
@@ -88,8 +89,6 @@ public class HelloController {
 	        Principal principal) {
 	    
 	    String username = principal.getName();
-	    PetRecord savedRecord;
-
 	    // 1. 通常の記録（体重、気温など）を保存または更新
 	    if (record.getId() != null) {
 	        Optional<PetRecord> existingOpt = repository.findById(record.getId());
@@ -100,36 +99,42 @@ public class HelloController {
 	            existing.setHumidity(record.getHumidity());
 	            existing.setFood(record.getFood());
 	            existing.setMemo(record.getMemo());
-	            savedRecord = repository.save(existing);
+	            repository.save(existing);
 	        } else {
 	            return "redirect:/";
 	        }
 	    } else {
 	        record.setUsername(username);
-	        savedRecord = repository.save(record);
+	        repository.save(record);}
+		return username;
 	    }
 
-	    // 2. 動的なカスタム項目の値を保存
-	    for (String key : allParams.keySet()) {
-	        if (key.startsWith("customItem_")) {
-	            try {
-	                Long itemId = Long.parseLong(key.split("_")[1]);
-	                String valueStr = allParams.get(key);
+	//カスタム項目保存用
+	@PostMapping("/customitem")
+	public String saveCustomItem(
+			@RequestParam("itemName") String itemName,
+			@RequestParam("calcType") String calcType,
+			Principal principal) {
 
-	                if (valueStr != null && !valueStr.isEmpty()) {
-	                    Double value = Double.parseDouble(valueStr);
-	                    CustomItemValue valEntity = new CustomItemValue();
-	                    valEntity.setPetRecord(savedRecord);
-	                    valEntity.setCustomItem(customItemRepository.findById(itemId).orElse(null));
-	                    valEntity.setValue(value);
-	                    customItemValueRepository.save(valEntity);
-	                }
-	            } catch (Exception e) {
-	                e.printStackTrace();
-	            }
-	        }
-	    }
-	    return "redirect:/?mode=day";
+		String username = principal.getName();
+
+		try {
+			// 新しいカスタム項目のエンティティを作成
+			CustomItem newItem = new CustomItem();
+			newItem.setItemName(itemName);
+			newItem.setCalcType(calcType);
+			newItem.setUsername(username); // 誰の項目か紐付け
+
+			// リポジトリ経由でDBに保存
+			customItemRepository.save(newItem);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			// 必要に応じてエラーメッセージをログに出力
+		}
+
+		// 保存後はメイン画面（または設定画面）にリダイレクト
+		return "redirect:/";
 	}
 
 	// ★ 復活：編集画面表示
@@ -138,9 +143,9 @@ public class HelloController {
 		Optional<PetRecord> recordOpt = repository.findById(id);
 		if (recordOpt.isPresent() && recordOpt.get().getUsername().equals(principal.getName())) {
 			model.addAttribute("editingRecord", recordOpt.get());
-			
+
 			// 編集画面でもリストを表示する必要があるため、indexと同様の処理を行う
-			return index("day", model, principal); 
+			return index("day", model, principal);
 		}
 		return "redirect:/";
 	}
@@ -160,8 +165,9 @@ public class HelloController {
 			try {
 				String uploadDir = "user-photos/";
 				Path uploadPath = Paths.get(uploadDir);
-				if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-				
+				if (!Files.exists(uploadPath))
+					Files.createDirectories(uploadPath);
+
 				String fileName = UUID.randomUUID().toString() + ".jpg";
 				Thumbnails.of(file.getInputStream()).size(800, 800).outputFormat("jpg").toFile(uploadDir + fileName);
 
