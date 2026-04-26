@@ -42,5 +42,6 @@ MyPetDiary は、より楽しく、より繋がりを感じられるアプリを
 - 説明用動画URL：【 https://drive.google.com/file/d/1prbPqUK3aYlNcUHshHjUMNCiLRZxzhEO/ 】
 
 ---
+
 ###### ポートフォリオ仕様書URL
 - 仕様書URL： https://www.notion.so/34bbabb785ac801dab21d8ac8788b95a?source=copy_link
