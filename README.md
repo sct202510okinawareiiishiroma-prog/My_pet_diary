@@ -7,18 +7,13 @@
 
 ---
 
-## 仕様書
-- URL：https://www.notion.so/MyPetDiary-344babb785ac8062af3cc5ba1ad5499d?source=copy_link
-
----
-
 ### 🐾 主な機能
 * **ペットの健康日記**: 毎日の食事、排泄、活動量を記録
 * **気象データ連動**: 気圧や気温や天気によって今日のペットの日常に変化が出ないかの判断材料になる
 
 ---
 
-#### 🚀 今後のアップデート予定
+####🚀 今後のアップデート予定
 🚀 今後のアップデート予定 (Roadmap)
 MyPetDiary は、より楽しく、より繋がりを感じられるアプリを目指して、以下の機能を順次追加予定です。
 
@@ -43,10 +38,9 @@ MyPetDiary は、より楽しく、より繋がりを感じられるアプリを
 - アカウント消去機能
   登録機能がある一方で消去機能がない問題点があるため、今後、実装します
 
-  ### **チュートリアル動画の追加**
-  - 説明用動画URL：[こちらをクリック（準備中）]()
+##### チュートリアル動画URL
+- 説明用動画URL：【 https://drive.google.com/file/d/1prbPqUK3aYlNcUHshHjUMNCiLRZxzhEO/ 】
 
 ---
-- 動画用URL:　https://drive.google.com/file/d/1prbPqUK3aYlNcUHshHjUMNCiLRZxzhEO/view?usp=sharing
-
-- ポートフォリオ仕様書URL： https://www.notion.so/34bbabb785ac801dab21d8ac8788b95a?source=copy_link
+###### ポートフォリオ仕様書URL
+- 仕様書URL： https://www.notion.so/34bbabb785ac801dab21d8ac8788b95a?source=copy_link
